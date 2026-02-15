@@ -143,6 +143,22 @@
         }
     </style>
 </head>
+<!-- Netlify hidden form (MUST be inside body) -->
+<form name="order" method="POST" data-netlify="true" netlify-honeypot="bot-field" hidden>
+    <input name="bot-field" />
+
+    <input type="text" name="customer_name" />
+    <input type="text" name="customer_phone" />
+    <input type="text" name="customer_gov" />
+    <textarea name="customer_address"></textarea>
+    <input type="email" name="customer_email" />
+
+    <input type="text" name="order_subtotal" />
+    <input type="text" name="order_shipping" />
+    <input type="text" name="order_total" />
+
+    <textarea name="order_items_json"></textarea>
+</form>
 
 <body>
     <!-- Header -->
