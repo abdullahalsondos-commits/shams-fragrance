@@ -226,8 +226,13 @@ function initCheckoutModal() {
                 </div>
                 <div class="checkout-body">
                     <div class="order-summary-mini">
-                        <span>Total Amount:</span>
-                        <span class="order-total-price" id="checkoutTotalDisplay">0.00 EGP</span>
+                        <div id="checkoutOrderItems" class="checkout-items-container">
+                            <!-- Items will be injected here -->
+                        </div>
+                        <div class="checkout-total-row">
+                            <span>Total Amount:</span>
+                            <span class="order-total-price" id="checkoutTotalDisplay">0.00 EGP</span>
+                        </div>
                     </div>
 
                     <form id="checkoutForm">
@@ -320,9 +325,25 @@ function initCheckoutModal() {
             const { total } = calculateTotals();
             document.getElementById('checkoutTotalDisplay').textContent = total.toFixed(2) + ' EGP';
 
+            // Render Order Items
+            const orderItemsContainer = document.getElementById('checkoutOrderItems');
+            if (orderItemsContainer) {
+                orderItemsContainer.innerHTML = cart.map(item => `
+                    <div class="checkout-item">
+                        <img src="${item.image}" alt="${item.name}" class="checkout-item-image">
+                        <div class="checkout-item-info">
+                            <span class="checkout-item-qty">${item.quantity}x</span>
+                            <span class="checkout-item-name">${item.name}</span>
+                        </div>
+                        <span class="checkout-item-price">${(item.price * item.quantity).toFixed(2)} EGP</span>
+                    </div>
+                `).join('');
+            }
+
             modal.classList.add('active');
         };
     }
+
 
     // Close Modal
     if (closeBtn) {
