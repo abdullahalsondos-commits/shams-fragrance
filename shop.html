@@ -270,6 +270,25 @@
     <!-- Scripts -->
     <script src="script.js"></script>
     <script src="cart.js"></script>
+
+    <!-- ✅ ADDED: Netlify hidden form (MUST be inside body) -->
+    <form name="order" method="POST" data-netlify="true" netlify-honeypot="bot-field" hidden>
+        <input type="hidden" name="form-name" value="order" />
+        <input name="bot-field" />
+
+        <input type="text" name="customer_name" />
+        <input type="text" name="customer_phone" />
+        <input type="text" name="customer_gov" />
+        <textarea name="customer_address"></textarea>
+        <input type="email" name="customer_email" />
+
+        <input type="text" name="order_subtotal" />
+        <input type="text" name="order_shipping" />
+        <input type="text" name="order_total" />
+
+        <textarea name="order_items_json"></textarea>
+    </form>
+
 </body>
 
 </html>
