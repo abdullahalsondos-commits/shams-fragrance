@@ -1,0 +1,102 @@
+/* Category Filters */
+.category-filters {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin: 3rem auto 4rem;
+    flex-wrap: wrap;
+    max-width: 800px;
+}
+
+.filter-btn {
+    padding: 0.8rem 2rem;
+    background: transparent;
+    border: 2px solid var(--color-border);
+    color: var(--color-primary);
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    font-weight: 500;
+    position: relative;
+    overflow: hidden;
+}
+
+.filter-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: var(--color-primary);
+    border-radius: 50%;
+    transition: all 0.5s ease;
+    transform: translate(-50%, -50%);
+    z-index: -1;
+}
+
+.filter-btn:hover::before,
+.filter-btn.active::before {
+    width: 300%;
+    height: 300%;
+}
+
+.filter-btn:hover,
+.filter-btn.active {
+    color: var(--color-secondary);
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Product Filtering Animations */
+.product-card {
+    animation: fadeInProduct 0.6s ease forwards;
+}
+
+.product-card.fade-out {
+    animation: fadeOutProduct 0.3s ease forwards;
+}
+
+@keyframes fadeInProduct {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes fadeOutProduct {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+}
+
+.product-card.hidden {
+    display: none;
+}
+
+/* Responsive Filters */
+@media (max-width: 600px) {
+    .category-filters {
+        gap: 1rem;
+    }
+
+    .filter-btn {
+        padding: 0.6rem 1.5rem;
+        font-size: 0.8rem;
+    }
+}

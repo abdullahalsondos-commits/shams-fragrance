@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ar" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Shop luxury perfumes at SHAMS FRAGRANCE - Premium fragrances for the sophisticated">
+    <title>Shop - SHAMS FRAGRANCE</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="animations.css">
+    <link rel="stylesheet" href="filters.css">
+    <link rel="stylesheet" href="cart.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header id="header">
+        <nav>
+            <div class="logo">
+                <div class="logo-icon">SH</div>
+                <span>SHAMS<br><small style="font-size: 0.5em; letter-spacing: 0.2em;">FRAGRANCE</small></span>
+            </div>
+
+            <ul class="nav-links" id="navLinks">
+                <li><a href="index.html">HOME</a></li>
+                <li><a href="shop.html" class="active">SHOP</a></li>
+                <li><a href="about.html">ABOUT</a></li>
+                <li><a href="contact.html">CONTACT</a></li>
+            </ul>
+
+            <div class="nav-actions">
+                <div class="cart-icon" id="cartIcon">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span class="cart-count" id="cartCount">0</span>
+                </div>
+                <div class="mobile-toggle" id="mobileToggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Shopping Cart Sidebar -->
+    <div class="cart-overlay" id="cartOverlay"></div>
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h2>Shopping Cart</h2>
+            <button class="cart-close" id="cartClose">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="cart-items" id="cartItems">
+            <!-- Cart items will be inserted here -->
+        </div>
+
+        <div class="cart-footer">
+            <div class="shipping-notice" id="shippingNotice">
+                <!-- Free shipping message -->
+            </div>
+
+            <div class="cart-summary">
+                <div class="summary-row">
+                    <span>Subtotal:</span>
+                    <span id="cartSubtotal">0.00 EGP</span>
+                </div>
+                <div class="summary-row">
+                    <span>Shipping:</span>
+                    <span id="cartShipping">80.00 EGP</span>
+                </div>
+                <div class="summary-row total">
+                    <span>Total:</span>
+                    <span id="cartTotal">0.00 EGP</span>
+                </div>
+            </div>
+
+            <button class="checkout-btn" id="checkoutBtn">
+                <i class="fas fa-lock"></i> CHECKOUT
+            </button>
+        </div>
+    </div>
+
+    <!-- Shop Header -->
+    <section class="hero" style="min-height: 50vh; padding-top: 8rem;">
+        <div class="hero-content">
+            <h1>Our Collection</h1>
+            <p class="hero-subtitle">Timeless fragrances for the discerning</p>
+
+            <!-- Features Banner -->
+            <div class="features-banner" style="margin-top: 3rem;">
+                <div class="feature-item-banner">
+                    <i class="fas fa-star"></i>
+                    <span>Great Quality, Affordable Price</span>
+                </div>
+                <div class="feature-item-banner">
+                    <i class="fas fa-shipping-fast"></i>
+                    <span>Fast Delivery 1–3 Days</span>
+                </div>
+                <div class="feature-item-banner">
+                    <i class="fas fa-tags"></i>
+                    <span>Buy 2, Get Special Offer</span>
+                </div>
+                <div class="feature-item-banner">
+                    <i class="fas fa-gift"></i>
+                    <span>Free Gift > 1500 EGP</span>
+                </div>
+                <div class="feature-item-banner">
+                    <i class="fas fa-percentage"></i>
+                    <span>10% off First Order</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Shop Section -->
+    <section id="shop-products">
+        <div class="section-header">
+            <p class="section-label">DISCOVER</p>
+            <h2 class="section-title">The Collection</h2>
+            <p class="section-description">Discover our range of signature scents and premium oils</p>
+        </div>
+
+        <!-- Category Filters -->
+        <div class="category-filters">
+            <button class="filter-btn active" data-category="all">All Products</button>
+            <button class="filter-btn" data-category="men">For Man</button>
+            <button class="filter-btn" data-category="women">For Woman</button>
+        </div>
+
+        <div class="products-grid">
+            <!-- Paradise -->
+            <div class="product-card" data-category="men women"
+                onclick="window.location.href='product.html?id=paradise'" style="cursor: pointer;">
+                <span class="product-badge">NEW</span>
+                <img src="assets/images/perfumes/paradise.jpg" alt="Paradise" class="product-image">
+                <h3 class="product-name">Paradise</h3>
+                <p class="product-description">Dupe Erba Pura</p>
+                <p class="product-price">490.00 EGP</p>
+                <button class="product-button"
+                    onclick="event.stopPropagation(); addToCart({id: 'paradise', name: 'Paradise', price: 490, image: 'assets/images/perfumes/paradise.jpg'})">ADD
+                    TO CART</button>
+            </div>
+
+            <!-- Lunara -->
+            <div class="product-card" data-category="women" onclick="window.location.href='product.html?id=lunara'"
+                style="cursor: pointer;">
+                <span class="product-badge">NEW</span>
+                <img src="assets/images/perfumes/lunara.jpg" alt="Lunara" class="product-image">
+                <h3 class="product-name">Lunara</h3>
+                <p class="product-description">Dupe Kayali Vanilla | 28</p>
+                <p class="product-price">380.00 EGP</p>
+                <button class="product-button"
+                    onclick="event.stopPropagation(); addToCart({id: 'lunara', name: 'Lunara', price: 380, image: 'assets/images/perfumes/lunara.jpg'})">ADD
+                    TO CART</button>
+            </div>
+
+            <!-- Sigma -->
+            <div class="product-card" data-category="men" onclick="window.location.href='product.html?id=sigma'"
+                style="cursor: pointer;">
+                <span class="product-badge">NEW</span>
+                <img src="assets/images/perfumes/sigma.jpg" alt="Sigma" class="product-image">
+                <h3 class="product-name">Sigma</h3>
+                <p class="product-description">Dupe Stronger With You Intensely</p>
+                <p class="product-price">450.00 EGP</p>
+                <button class="product-button"
+                    onclick="event.stopPropagation(); addToCart({id: 'sigma', name: 'Sigma', price: 450, image: 'assets/images/perfumes/sigma.jpg'})">ADD
+                    TO CART</button>
+            </div>
+
+            <!-- Blaze -->
+            <div class="product-card" data-category="men" onclick="window.location.href='product.html?id=blaze'"
+                style="cursor: pointer;">
+                <span class="product-badge">NEW</span>
+                <img src="assets/images/perfumes/blaze.jpg" alt="Blaze" class="product-image">
+                <h3 class="product-name">Blaze</h3>
+                <p class="product-description">Dupe El Thaïr</p>
+                <p class="product-price">490.00 EGP</p>
+                <button class="product-button"
+                    onclick="event.stopPropagation(); addToCart({id: 'blaze', name: 'Blaze', price: 490, image: 'assets/images/perfumes/blaze.jpg'})">ADD
+                    TO CART</button>
+            </div>
+
+            <!-- Shadow Spice -->
+            <div class="product-card" data-category="men" onclick="window.location.href='product.html?id=shadow-spice'"
+                style="cursor: pointer;">
+                <span class="product-badge">NEW</span>
+                <img src="assets/images/perfumes/shadow-spice.jpg" alt="Shadow Spice" class="product-image">
+                <h3 class="product-name">Shadow Spice</h3>
+                <p class="product-description">Dupe Layton</p>
+                <p class="product-price">490.00 EGP</p>
+                <button class="product-button"
+                    onclick="event.stopPropagation(); addToCart({id: 'shadow-spice', name: 'Shadow Spice', price: 490, image: 'assets/images/perfumes/shadow-spice.jpg'})">ADD
+                    TO CART</button>
+            </div>
+
+            <!-- Pink Aura -->
+            <div class="product-card" data-category="women" onclick="window.location.href='product.html?id=pink-aura'"
+                style="cursor: pointer;">
+                <span class="product-badge">NEW</span>
+                <img src="assets/images/perfumes/pink-aura.jpg" alt="Pink Aura" class="product-image">
+                <h3 class="product-name">Pink Aura</h3>
+                <p class="product-description">Dupe Eilish Billie Eilish</p>
+                <p class="product-price">450.00 EGP</p>
+                <button class="product-button"
+                    onclick="event.stopPropagation(); addToCart({id: 'pink-aura', name: 'Pink Aura', price: 450, image: 'assets/images/perfumes/pink-aura.jpg'})">ADD
+                    TO CART</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>SHAMS<br>FRAGRANCE</h3>
+                <p>Defining luxury through scent. Crafted for those who seek distinction and elegance in every note.</p>
+                <div class="social-links">
+                    <div class="social-icon"><i class="fab fa-instagram"></i></div>
+                    <div class="social-icon"><i class="fab fa-facebook"></i></div>
+                    <div class="social-icon"><i class="fab fa-twitter"></i></div>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <h3>Explore</h3>
+                <ul>
+                    <li><a href="#" onclick="filterByCategory('all')">Shop All</a></li>
+                    <li><a href="#" onclick="filterByCategory('men')">For Man</a></li>
+                    <li><a href="#" onclick="filterByCategory('women')">For Woman</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Company</h3>
+                <ul class="footer-links">
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="#">Shipping & Returns</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Follow Us</h3>
+                <p>Stay connected for exclusive launches and fragrance inspirations.</p>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2026 SHAMS FRAGRANCE. ALL RIGHTS RESERVED.</p>
+            <p style="margin-top: 0.5rem; font-size: 0.8rem;">Made with Iragit ♥</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+    <script src="cart.js"></script>
+</body>
+
+</html>
