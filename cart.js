@@ -15,6 +15,24 @@ function encodeForm(data) {
         .join("&");
 }
 
+// ✅ IMPORTANT: Determine correct POST URL for Netlify Forms
+function getNetlifyPostUrl() {
+    let path = window.location.pathname || "/";
+
+    // remove trailing slash (except root)
+    if (path.length > 1 && path.endsWith("/")) {
+        path = path.slice(0, -1);
+    }
+
+    // If your site uses pretty routes like /shop and /product,
+    // but actual files are shop.html / product.html, force .html
+    if (path !== "/" && !path.includes(".")) {
+        path = path + ".html";
+    }
+
+    return path || "/";
+}
+
 // Load cart from localStorage
 function loadCart() {
     const savedCart = localStorage.getItem("shamsCart");
@@ -99,36 +117,36 @@ function updateCartUI() {
     if (cartItems) {
         if (cart.length === 0) {
             cartItems.innerHTML = `
-                <div class="empty-cart">
-                    <i class="fas fa-shopping-bag"></i>
-                    <p>Your cart is empty</p>
-                    <a href="shop.html" class="cta-button">BROWSE PRODUCTS</a>
-                </div>
-            `;
+        <div class="empty-cart">
+          <i class="fas fa-shopping-bag"></i>
+          <p>Your cart is empty</p>
+          <a href="shop.html" class="cta-button">BROWSE PRODUCTS</a>
+        </div>
+      `;
         } else {
             cartItems.innerHTML = cart
                 .map(
                     (item) => `
-                <div class="cart-item">
-                    <img src="${item.image}" alt="${item.name}" class="cart-item-image">
-                    <div class="cart-item-details">
-                        <div class="cart-item-name">${item.name}</div>
-                        <div class="cart-item-price">${item.price.toFixed(2)} EGP</div>
-                        <div class="cart-item-quantity">
-                            <button class="qty-btn" onclick="updateQuantity('${item.id}', -1)">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                            <span class="qty-value">${item.quantity}</span>
-                            <button class="qty-btn" onclick="updateQuantity('${item.id}', 1)">
-                                <i class="fas fa-plus"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <button class="cart-item-remove" onclick="removeFromCart('${item.id}')">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            `
+          <div class="cart-item">
+            <img src="${item.image}" alt="${item.name}" class="cart-item-image">
+            <div class="cart-item-details">
+              <div class="cart-item-name">${item.name}</div>
+              <div class="cart-item-price">${item.price.toFixed(2)} EGP</div>
+              <div class="cart-item-quantity">
+                <button class="qty-btn" onclick="updateQuantity('${item.id}', -1)">
+                  <i class="fas fa-minus"></i>
+                </button>
+                <span class="qty-value">${item.quantity}</span>
+                <button class="qty-btn" onclick="updateQuantity('${item.id}', 1)">
+                  <i class="fas fa-plus"></i>
+                </button>
+              </div>
+            </div>
+            <button class="cart-item-remove" onclick="removeFromCart('${item.id}')">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        `
                 )
                 .join("");
         }
@@ -157,9 +175,9 @@ function updateCartUI() {
     if (shippingNotice) {
         if (subtotal >= 1000) {
             shippingNotice.innerHTML = `
-                <i class="fas fa-truck"></i>
-                Congratulations! You get FREE SHIPPING!
-            `;
+        <i class="fas fa-truck"></i>
+        Congratulations! You get FREE SHIPPING!
+      `;
             shippingNotice.classList.add("show");
             shippingNotice.style.background = "";
             shippingNotice.style.borderColor = "";
@@ -167,9 +185,9 @@ function updateCartUI() {
         } else {
             const remaining = 1000 - subtotal;
             shippingNotice.innerHTML = `
-                <i class="fas fa-info-circle"></i>
-                Add ${remaining.toFixed(2)} EGP more for FREE SHIPPING
-            `;
+        <i class="fas fa-info-circle"></i>
+        Add ${remaining.toFixed(2)} EGP more for FREE SHIPPING
+      `;
             shippingNotice.classList.add("show");
             shippingNotice.style.background = "#fff3cd";
             shippingNotice.style.borderColor = "#ffc107";
@@ -191,7 +209,6 @@ function toggleCart() {
 
 // Show add to cart feedback
 function showCartFeedback() {
-    // Simple visual feedback
     const cartIcon = document.getElementById("cartIcon");
     if (cartIcon) {
         cartIcon.style.transform = "scale(1.3)";
@@ -231,89 +248,84 @@ function initCheckoutModal() {
     // 1. Inject Modal HTML
     if (!document.getElementById("checkoutModal")) {
         const modalHTML = `
-        <div class="checkout-modal" id="checkoutModal">
-            <div class="checkout-container">
-                <div class="checkout-header">
-                    <h2>Complete Your Order</h2>
-                    <button class="checkout-close" id="closeCheckout">&times;</button>
-                </div>
-                <div class="checkout-body">
-                    <div class="order-summary-mini">
-                        <div id="checkoutOrderItems" class="checkout-items-container">
-                            <!-- Items will be injected here -->
-                        </div>
-                        <div class="checkout-total-row">
-                            <span>Total Amount:</span>
-                            <span class="order-total-price" id="checkoutTotalDisplay">0.00 EGP</span>
-                        </div>
-                    </div>
-
-                    <form id="checkoutForm">
-                        <!-- Name -->
-                        <div class="form-group">
-                            <label class="form-label">Full Name <span>*</span></label>
-                            <input type="text" class="form-input" id="c_name" placeholder="Mohamed Ahmed" required>
-                        </div>
-
-                        <!-- Phone -->
-                        <div class="form-group">
-                            <label class="form-label">Phone Number <span>*</span></label>
-                            <input type="tel" class="form-input" id="c_phone" placeholder="01xxxxxxxxx" pattern="[0-9]{11}" required>
-                        </div>
-
-                        <!-- Governorate -->
-                        <div class="form-group">
-                            <label class="form-label">Governorate <span>*</span></label>
-                            <select class="form-select" id="c_gov" required>
-                                <option value="" disabled selected>Select Governorate</option>
-                                <option value="Cairo">Cairo</option>
-                                <option value="Giza">Giza</option>
-                                <option value="Alexandria">Alexandria</option>
-                                <option value="Dakahlia">Dakahlia</option>
-                                <option value="Red Sea">Red Sea</option>
-                                <option value="Beheira">Beheira</option>
-                                <option value="Fayoum">Fayoum</option>
-                                <option value="Gharbiya">Gharbiya</option>
-                                <option value="Ismailia">Ismailia</option>
-                                <option value="Menofia">Menofia</option>
-                                <option value="Minya">Minya</option>
-                                <option value="Qaliubiya">Qaliubiya</option>
-                                <option value="New Valley">New Valley</option>
-                                <option value="Suez">Suez</option>
-                                <option value="Aswan">Aswan</option>
-                                <option value="Assiut">Assiut</option>
-                                <option value="Beni Suef">Beni Suef</option>
-                                <option value="Port Said">Port Said</option>
-                                <option value="Damietta">Damietta</option>
-                                <option value="Sharkia">Sharkia</option>
-                                <option value="South Sinai">South Sinai</option>
-                                <option value="Kafr Al Sheikh">Kafr Al Sheikh</option>
-                                <option value="Matrouh">Matrouh</option>
-                                <option value="Luxor">Luxor</option>
-                                <option value="Qena">Qena</option>
-                                <option value="North Sinai">North Sinai</option>
-                                <option value="Sohag">Sohag</option>
-                            </select>
-                        </div>
-
-                        <!-- Address -->
-                        <div class="form-group">
-                            <label class="form-label">Detailed Address <span>*</span></label>
-                            <textarea class="form-textarea" id="c_address" placeholder="Street name, Building number, Apartment..." required></textarea>
-                        </div>
-
-                        <!-- Email (Optional) -->
-                        <div class="form-group">
-                            <label class="form-label">Email Address (Optional)</label>
-                            <input type="email" class="form-input" id="c_email" placeholder="example@email.com">
-                        </div>
-
-                        <button type="submit" class="form-submit">CONFIRM ORDER</button>
-                    </form>
-                </div>
+      <div class="checkout-modal" id="checkoutModal">
+        <div class="checkout-container">
+          <div class="checkout-header">
+            <h2>Complete Your Order</h2>
+            <button class="checkout-close" id="closeCheckout">&times;</button>
+          </div>
+          <div class="checkout-body">
+            <div class="order-summary-mini">
+              <div id="checkoutOrderItems" class="checkout-items-container">
+                <!-- Items will be injected here -->
+              </div>
+              <div class="checkout-total-row">
+                <span>Total Amount:</span>
+                <span class="order-total-price" id="checkoutTotalDisplay">0.00 EGP</span>
+              </div>
             </div>
+
+            <form id="checkoutForm">
+              <div class="form-group">
+                <label class="form-label">Full Name <span>*</span></label>
+                <input type="text" class="form-input" id="c_name" placeholder="Mohamed Ahmed" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Phone Number <span>*</span></label>
+                <input type="tel" class="form-input" id="c_phone" placeholder="01xxxxxxxxx" pattern="[0-9]{11}" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Governorate <span>*</span></label>
+                <select class="form-select" id="c_gov" required>
+                  <option value="" disabled selected>Select Governorate</option>
+                  <option value="Cairo">Cairo</option>
+                  <option value="Giza">Giza</option>
+                  <option value="Alexandria">Alexandria</option>
+                  <option value="Dakahlia">Dakahlia</option>
+                  <option value="Red Sea">Red Sea</option>
+                  <option value="Beheira">Beheira</option>
+                  <option value="Fayoum">Fayoum</option>
+                  <option value="Gharbiya">Gharbiya</option>
+                  <option value="Ismailia">Ismailia</option>
+                  <option value="Menofia">Menofia</option>
+                  <option value="Minya">Minya</option>
+                  <option value="Qaliubiya">Qaliubiya</option>
+                  <option value="New Valley">New Valley</option>
+                  <option value="Suez">Suez</option>
+                  <option value="Aswan">Aswan</option>
+                  <option value="Assiut">Assiut</option>
+                  <option value="Beni Suef">Beni Suef</option>
+                  <option value="Port Said">Port Said</option>
+                  <option value="Damietta">Damietta</option>
+                  <option value="Sharkia">Sharkia</option>
+                  <option value="South Sinai">South Sinai</option>
+                  <option value="Kafr Al Sheikh">Kafr Al Sheikh</option>
+                  <option value="Matrouh">Matrouh</option>
+                  <option value="Luxor">Luxor</option>
+                  <option value="Qena">Qena</option>
+                  <option value="North Sinai">North Sinai</option>
+                  <option value="Sohag">Sohag</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Detailed Address <span>*</span></label>
+                <textarea class="form-textarea" id="c_address" placeholder="Street name, Building number, Apartment..." required></textarea>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Email Address (Optional)</label>
+                <input type="email" class="form-input" id="c_email" placeholder="example@email.com">
+              </div>
+
+              <button type="submit" class="form-submit">CONFIRM ORDER</button>
+            </form>
+          </div>
         </div>
-        `;
+      </div>
+    `;
         document.body.insertAdjacentHTML("beforeend", modalHTML);
     }
 
@@ -332,26 +344,23 @@ function initCheckoutModal() {
                 return;
             }
 
-            // Update total in modal
             const { total } = calculateTotals();
-            document.getElementById("checkoutTotalDisplay").textContent =
-                total.toFixed(2) + " EGP";
+            document.getElementById("checkoutTotalDisplay").textContent = total.toFixed(2) + " EGP";
 
-            // Render Order Items
             const orderItemsContainer = document.getElementById("checkoutOrderItems");
             if (orderItemsContainer) {
                 orderItemsContainer.innerHTML = cart
                     .map(
                         (item) => `
-                    <div class="checkout-item">
-                        <img src="${item.image}" alt="${item.name}" class="checkout-item-image">
-                        <div class="checkout-item-info">
-                            <span class="checkout-item-qty">${item.quantity}x</span>
-                            <span class="checkout-item-name">${item.name}</span>
-                        </div>
-                        <span class="checkout-item-price">${(item.price * item.quantity).toFixed(2)} EGP</span>
-                    </div>
-                `
+              <div class="checkout-item">
+                <img src="${item.image}" alt="${item.name}" class="checkout-item-image">
+                <div class="checkout-item-info">
+                  <span class="checkout-item-qty">${item.quantity}x</span>
+                  <span class="checkout-item-name">${item.name}</span>
+                </div>
+                <span class="checkout-item-price">${(item.price * item.quantity).toFixed(2)} EGP</span>
+              </div>
+            `
                     )
                     .join("");
             }
@@ -417,36 +426,39 @@ function initCheckoutModal() {
             submitBtn.disabled = true;
 
             try {
-                // Send to Netlify Forms
                 const payload = {
                     "form-name": NETLIFY_FORM_NAME,
+                    "bot-field": "",
                     customer_name: customerName,
                     customer_phone: customerPhone,
                     customer_gov: customerGov,
                     customer_address: customerAddress,
                     customer_email: customerEmail,
                     order_subtotal: subtotal.toFixed(2) + " EGP",
-                    order_shipping: (shipping === 0 ? "FREE" : shipping.toFixed(2) + " EGP"),
+                    order_shipping: shipping === 0 ? "FREE" : shipping.toFixed(2) + " EGP",
                     order_total: total.toFixed(2) + " EGP",
                     order_items_json: JSON.stringify(orderItems),
                 };
 
-                const res = await fetch("/", {
+                // ✅ FIX: correct POST URL
+                const postUrl = getNetlifyPostUrl();
+
+                const res = await fetch(postUrl, {
                     method: "POST",
                     headers: { "Content-Type": "application/x-www-form-urlencoded" },
                     body: encodeForm(payload),
                 });
 
-                if (!res.ok) throw new Error("Netlify Forms submission failed");
+                if (!res.ok) {
+                    throw new Error("Netlify Forms submission failed: " + res.status);
+                }
 
                 // Success UI
                 submitBtn.textContent = "ORDER SENT ✓";
                 submitBtn.style.background = "#4caf50";
 
                 setTimeout(() => {
-                    alert(
-                        "THANK YOU! Your order has been placed successfully.\nWe will contact you shortly to confirm."
-                    );
+                    alert("THANK YOU! Your order has been placed successfully.\nWe will contact you shortly to confirm.");
 
                     // Reset and Close
                     cart = [];
