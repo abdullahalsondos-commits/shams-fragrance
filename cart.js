@@ -4,9 +4,20 @@
 
 let cart = [];
 
+// ================================
+// NETLIFY FORMS SETTINGS
+// ================================
+const NETLIFY_FORM_NAME = "order"; // لازم يطابق اسم الفورم المخفي في HTML
+
+function encodeForm(data) {
+    return Object.keys(data)
+        .map((key) => encodeURIComponent(key) + "=" + encodeURIComponent(data[key]))
+        .join("&");
+}
+
 // Load cart from localStorage
 function loadCart() {
-    const savedCart = localStorage.getItem('shamsCart');
+    const savedCart = localStorage.getItem("shamsCart");
     if (savedCart) {
         cart = JSON.parse(savedCart);
         updateCartUI();
@@ -15,12 +26,12 @@ function loadCart() {
 
 // Save cart to localStorage
 function saveCart() {
-    localStorage.setItem('shamsCart', JSON.stringify(cart));
+    localStorage.setItem("shamsCart", JSON.stringify(cart));
 }
 
 // Add item to cart
 function addToCart(product) {
-    const existingItem = cart.find(item => item.id === product.id);
+    const existingItem = cart.find((item) => item.id === product.id);
 
     if (existingItem) {
         existingItem.quantity += 1;
@@ -30,7 +41,7 @@ function addToCart(product) {
             name: product.name,
             price: product.price,
             image: product.image,
-            quantity: 1
+            quantity: 1,
         });
     }
 
@@ -41,14 +52,14 @@ function addToCart(product) {
 
 // Remove item from cart
 function removeFromCart(productId) {
-    cart = cart.filter(item => item.id !== productId);
+    cart = cart.filter((item) => item.id !== productId);
     saveCart();
     updateCartUI();
 }
 
 // Update item quantity
 function updateQuantity(productId, change) {
-    const item = cart.find(item => item.id === productId);
+    const item = cart.find((item) => item.id === productId);
     if (item) {
         item.quantity += change;
         if (item.quantity <= 0) {
@@ -62,7 +73,7 @@ function updateQuantity(productId, change) {
 
 // Calculate cart totals
 function calculateTotals() {
-    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const shipping = subtotal >= 1000 ? 0 : 80;
     const total = subtotal + shipping;
 
@@ -71,12 +82,12 @@ function calculateTotals() {
 
 // Update cart UI
 function updateCartUI() {
-    const cartCount = document.getElementById('cartCount');
-    const cartItems = document.getElementById('cartItems');
-    const cartSubtotal = document.getElementById('cartSubtotal');
-    const cartShipping = document.getElementById('cartShipping');
-    const cartTotal = document.getElementById('cartTotal');
-    const shippingNotice = document.getElementById('shippingNotice');
+    const cartCount = document.getElementById("cartCount");
+    const cartItems = document.getElementById("cartItems");
+    const cartSubtotal = document.getElementById("cartSubtotal");
+    const cartShipping = document.getElementById("cartShipping");
+    const cartTotal = document.getElementById("cartTotal");
+    const shippingNotice = document.getElementById("shippingNotice");
 
     // Update cart count
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -95,7 +106,9 @@ function updateCartUI() {
                 </div>
             `;
         } else {
-            cartItems.innerHTML = cart.map(item => `
+            cartItems.innerHTML = cart
+                .map(
+                    (item) => `
                 <div class="cart-item">
                     <img src="${item.image}" alt="${item.name}" class="cart-item-image">
                     <div class="cart-item-details">
@@ -115,7 +128,9 @@ function updateCartUI() {
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
-            `).join('');
+            `
+                )
+                .join("");
         }
     }
 
@@ -145,70 +160,68 @@ function updateCartUI() {
                 <i class="fas fa-truck"></i>
                 Congratulations! You get FREE SHIPPING!
             `;
-            shippingNotice.classList.add('show');
+            shippingNotice.classList.add("show");
+            shippingNotice.style.background = "";
+            shippingNotice.style.borderColor = "";
+            shippingNotice.style.color = "";
         } else {
             const remaining = 1000 - subtotal;
             shippingNotice.innerHTML = `
                 <i class="fas fa-info-circle"></i>
                 Add ${remaining.toFixed(2)} EGP more for FREE SHIPPING
             `;
-            shippingNotice.classList.add('show');
-            shippingNotice.style.background = '#fff3cd';
-            shippingNotice.style.borderColor = '#ffc107';
-            shippingNotice.style.color = '#856404';
+            shippingNotice.classList.add("show");
+            shippingNotice.style.background = "#fff3cd";
+            shippingNotice.style.borderColor = "#ffc107";
+            shippingNotice.style.color = "#856404";
         }
     }
 }
 
 // Toggle cart sidebar
 function toggleCart() {
-    const cartSidebar = document.getElementById('cartSidebar');
-    const cartOverlay = document.getElementById('cartOverlay');
+    const cartSidebar = document.getElementById("cartSidebar");
+    const cartOverlay = document.getElementById("cartOverlay");
 
     if (cartSidebar && cartOverlay) {
-        cartSidebar.classList.toggle('active');
-        cartOverlay.classList.toggle('active');
+        cartSidebar.classList.toggle("active");
+        cartOverlay.classList.toggle("active");
     }
 }
 
 // Show add to cart feedback
 function showCartFeedback() {
     // Simple visual feedback
-    const cartIcon = document.getElementById('cartIcon');
+    const cartIcon = document.getElementById("cartIcon");
     if (cartIcon) {
-        cartIcon.style.transform = 'scale(1.3)';
+        cartIcon.style.transform = "scale(1.3)";
         setTimeout(() => {
-            cartIcon.style.transform = 'scale(1)';
+            cartIcon.style.transform = "scale(1)";
         }, 200);
     }
 }
 
 // Initialize cart
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
     loadCart();
 
     // Cart icon click
-    const cartIcon = document.getElementById('cartIcon');
+    const cartIcon = document.getElementById("cartIcon");
     if (cartIcon) {
-        cartIcon.addEventListener('click', toggleCart);
+        cartIcon.addEventListener("click", toggleCart);
     }
 
     // Close cart button
-    const cartClose = document.getElementById('cartClose');
+    const cartClose = document.getElementById("cartClose");
     if (cartClose) {
-        cartClose.addEventListener('click', toggleCart);
+        cartClose.addEventListener("click", toggleCart);
     }
 
     // Overlay click
-    const cartOverlay = document.getElementById('cartOverlay');
+    const cartOverlay = document.getElementById("cartOverlay");
     if (cartOverlay) {
-        cartOverlay.addEventListener('click', toggleCart);
+        cartOverlay.addEventListener("click", toggleCart);
     }
-
-
-    // Checkout button logic - Updated to open Modal
-    /* const checkoutBtn = document.getElementById('checkoutBtn');
-       if (checkoutBtn) { ... } */
 
     // Initialize Checkout Modal
     initCheckoutModal();
@@ -216,7 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function initCheckoutModal() {
     // 1. Inject Modal HTML
-    if (!document.getElementById('checkoutModal')) {
+    if (!document.getElementById("checkoutModal")) {
         const modalHTML = `
         <div class="checkout-modal" id="checkoutModal">
             <div class="checkout-container">
@@ -301,34 +314,35 @@ function initCheckoutModal() {
             </div>
         </div>
         `;
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        document.body.insertAdjacentHTML("beforeend", modalHTML);
     }
 
     // 2. Event Listeners
-    const checkoutBtn = document.getElementById('checkoutBtn');
-    const modal = document.getElementById('checkoutModal');
-    const closeBtn = document.getElementById('closeCheckout');
-    const form = document.getElementById('checkoutForm');
+    const checkoutBtn = document.getElementById("checkoutBtn");
+    const modal = document.getElementById("checkoutModal");
+    const closeBtn = document.getElementById("closeCheckout");
+    const form = document.getElementById("checkoutForm");
 
     // Open Modal
     if (checkoutBtn) {
-        // Remove old listeners by cloning (simple hack) or just add new one
-        // Better to just add listener that checks logic
         checkoutBtn.onclick = (e) => {
             e.preventDefault();
             if (cart.length === 0) {
-                alert('Your cart is empty!');
+                alert("Your cart is empty!");
                 return;
             }
 
             // Update total in modal
             const { total } = calculateTotals();
-            document.getElementById('checkoutTotalDisplay').textContent = total.toFixed(2) + ' EGP';
+            document.getElementById("checkoutTotalDisplay").textContent =
+                total.toFixed(2) + " EGP";
 
             // Render Order Items
-            const orderItemsContainer = document.getElementById('checkoutOrderItems');
+            const orderItemsContainer = document.getElementById("checkoutOrderItems");
             if (orderItemsContainer) {
-                orderItemsContainer.innerHTML = cart.map(item => `
+                orderItemsContainer.innerHTML = cart
+                    .map(
+                        (item) => `
                     <div class="checkout-item">
                         <img src="${item.image}" alt="${item.name}" class="checkout-item-image">
                         <div class="checkout-item-info">
@@ -337,18 +351,19 @@ function initCheckoutModal() {
                         </div>
                         <span class="checkout-item-price">${(item.price * item.quantity).toFixed(2)} EGP</span>
                     </div>
-                `).join('');
+                `
+                    )
+                    .join("");
             }
 
-            modal.classList.add('active');
+            modal.classList.add("active");
         };
     }
-
 
     // Close Modal
     if (closeBtn) {
         closeBtn.onclick = () => {
-            modal.classList.remove('active');
+            modal.classList.remove("active");
         };
     }
 
@@ -356,47 +371,102 @@ function initCheckoutModal() {
     if (modal) {
         modal.onclick = (e) => {
             if (e.target === modal) {
-                modal.classList.remove('active');
+                modal.classList.remove("active");
             }
         };
     }
 
-    // Handle Form Submit
+    // ================================
+    // Handle Form Submit (REAL ORDER)
+    // ================================
     if (form) {
-        form.onsubmit = (e) => {
+        form.onsubmit = async (e) => {
             e.preventDefault();
 
-            // Basic validation is handled by 'required' attributes
+            if (cart.length === 0) {
+                alert("Your cart is empty!");
+                return;
+            }
 
-            // Simulate processing
-            const submitBtn = form.querySelector('.form-submit');
+            const submitBtn = form.querySelector(".form-submit");
             const originalText = submitBtn.textContent;
 
-            submitBtn.textContent = 'PROCESSING...';
+            // Collect customer data
+            const customerName = document.getElementById("c_name")?.value?.trim() || "";
+            const customerPhone = document.getElementById("c_phone")?.value?.trim() || "";
+            const customerGov = document.getElementById("c_gov")?.value || "";
+            const customerAddress = document.getElementById("c_address")?.value?.trim() || "";
+            const customerEmail = document.getElementById("c_email")?.value?.trim() || "";
+
+            if (!customerName || !customerPhone || !customerGov || !customerAddress) {
+                alert("Please fill all required fields.");
+                return;
+            }
+
+            // Totals + Items
+            const { subtotal, shipping, total } = calculateTotals();
+            const orderItems = cart.map((item) => ({
+                id: item.id,
+                name: item.name,
+                price: item.price,
+                qty: item.quantity,
+                lineTotal: item.price * item.quantity,
+            }));
+
+            submitBtn.textContent = "SENDING...";
             submitBtn.disabled = true;
 
-            setTimeout(() => {
-                // Success
-                submitBtn.textContent = 'ORDER PLACED!';
-                submitBtn.style.background = '#4caf50';
+            try {
+                // Send to Netlify Forms
+                const payload = {
+                    "form-name": NETLIFY_FORM_NAME,
+                    customer_name: customerName,
+                    customer_phone: customerPhone,
+                    customer_gov: customerGov,
+                    customer_address: customerAddress,
+                    customer_email: customerEmail,
+                    order_subtotal: subtotal.toFixed(2) + " EGP",
+                    order_shipping: (shipping === 0 ? "FREE" : shipping.toFixed(2) + " EGP"),
+                    order_total: total.toFixed(2) + " EGP",
+                    order_items_json: JSON.stringify(orderItems),
+                };
+
+                const res = await fetch("/", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: encodeForm(payload),
+                });
+
+                if (!res.ok) throw new Error("Netlify Forms submission failed");
+
+                // Success UI
+                submitBtn.textContent = "ORDER SENT ✓";
+                submitBtn.style.background = "#4caf50";
 
                 setTimeout(() => {
-                    alert('THANK YOU! Your order has been placed successfully.\nWe will contact you shortly to confirm.');
+                    alert(
+                        "THANK YOU! Your order has been placed successfully.\nWe will contact you shortly to confirm."
+                    );
 
                     // Reset and Close
                     cart = [];
                     saveCart();
                     updateCartUI();
                     toggleCart(); // Close sidebar
-                    modal.classList.remove('active'); // Close modal
+                    modal.classList.remove("active"); // Close modal
                     form.reset();
 
                     // Reset button
                     submitBtn.textContent = originalText;
                     submitBtn.disabled = false;
-                    submitBtn.style.background = '';
-                }, 1000);
-            }, 1000);
+                    submitBtn.style.background = "";
+                }, 600);
+            } catch (err) {
+                console.error(err);
+                alert("حصلت مشكلة في إرسال الأوردر. جرّب تاني.");
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
         };
     }
 }
