@@ -206,24 +206,176 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
+    // Checkout button logic - Updated to open Modal
+    /* const checkoutBtn = document.getElementById('checkoutBtn');
+       if (checkoutBtn) { ... } */
 
-    // Checkout button
+    // Initialize Checkout Modal
+    initCheckoutModal();
+});
+
+function initCheckoutModal() {
+    // 1. Inject Modal HTML
+    if (!document.getElementById('checkoutModal')) {
+        const modalHTML = `
+        <div class="checkout-modal" id="checkoutModal">
+            <div class="checkout-container">
+                <div class="checkout-header">
+                    <h2>Complete Your Order</h2>
+                    <button class="checkout-close" id="closeCheckout">&times;</button>
+                </div>
+                <div class="checkout-body">
+                    <div class="order-summary-mini">
+                        <span>Total Amount:</span>
+                        <span class="order-total-price" id="checkoutTotalDisplay">0.00 EGP</span>
+                    </div>
+
+                    <form id="checkoutForm">
+                        <!-- Name -->
+                        <div class="form-group">
+                            <label class="form-label">Full Name <span>*</span></label>
+                            <input type="text" class="form-input" id="c_name" placeholder="Mohamed Ahmed" required>
+                        </div>
+
+                        <!-- Phone -->
+                        <div class="form-group">
+                            <label class="form-label">Phone Number <span>*</span></label>
+                            <input type="tel" class="form-input" id="c_phone" placeholder="01xxxxxxxxx" pattern="[0-9]{11}" required>
+                        </div>
+
+                        <!-- Governorate -->
+                        <div class="form-group">
+                            <label class="form-label">Governorate <span>*</span></label>
+                            <select class="form-select" id="c_gov" required>
+                                <option value="" disabled selected>Select Governorate</option>
+                                <option value="Cairo">Cairo</option>
+                                <option value="Giza">Giza</option>
+                                <option value="Alexandria">Alexandria</option>
+                                <option value="Dakahlia">Dakahlia</option>
+                                <option value="Red Sea">Red Sea</option>
+                                <option value="Beheira">Beheira</option>
+                                <option value="Fayoum">Fayoum</option>
+                                <option value="Gharbiya">Gharbiya</option>
+                                <option value="Ismailia">Ismailia</option>
+                                <option value="Menofia">Menofia</option>
+                                <option value="Minya">Minya</option>
+                                <option value="Qaliubiya">Qaliubiya</option>
+                                <option value="New Valley">New Valley</option>
+                                <option value="Suez">Suez</option>
+                                <option value="Aswan">Aswan</option>
+                                <option value="Assiut">Assiut</option>
+                                <option value="Beni Suef">Beni Suef</option>
+                                <option value="Port Said">Port Said</option>
+                                <option value="Damietta">Damietta</option>
+                                <option value="Sharkia">Sharkia</option>
+                                <option value="South Sinai">South Sinai</option>
+                                <option value="Kafr Al Sheikh">Kafr Al Sheikh</option>
+                                <option value="Matrouh">Matrouh</option>
+                                <option value="Luxor">Luxor</option>
+                                <option value="Qena">Qena</option>
+                                <option value="North Sinai">North Sinai</option>
+                                <option value="Sohag">Sohag</option>
+                            </select>
+                        </div>
+
+                        <!-- Address -->
+                        <div class="form-group">
+                            <label class="form-label">Detailed Address <span>*</span></label>
+                            <textarea class="form-textarea" id="c_address" placeholder="Street name, Building number, Apartment..." required></textarea>
+                        </div>
+
+                        <!-- Email (Optional) -->
+                        <div class="form-group">
+                            <label class="form-label">Email Address (Optional)</label>
+                            <input type="email" class="form-input" id="c_email" placeholder="example@email.com">
+                        </div>
+
+                        <button type="submit" class="form-submit">CONFIRM ORDER</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+    }
+
+    // 2. Event Listeners
     const checkoutBtn = document.getElementById('checkoutBtn');
+    const modal = document.getElementById('checkoutModal');
+    const closeBtn = document.getElementById('closeCheckout');
+    const form = document.getElementById('checkoutForm');
+
+    // Open Modal
     if (checkoutBtn) {
-        checkoutBtn.addEventListener('click', () => {
+        // Remove old listeners by cloning (simple hack) or just add new one
+        // Better to just add listener that checks logic
+        checkoutBtn.onclick = (e) => {
+            e.preventDefault();
             if (cart.length === 0) {
                 alert('Your cart is empty!');
                 return;
             }
 
+            // Update total in modal
             const { total } = calculateTotals();
-            alert(`Checkout - Total: ${total.toFixed(2)} EGP\n\nThank you for your order!`);
+            document.getElementById('checkoutTotalDisplay').textContent = total.toFixed(2) + ' EGP';
 
-            // Clear cart after checkout
-            cart = [];
-            saveCart();
-            updateCartUI();
-            toggleCart();
-        });
+            modal.classList.add('active');
+        };
     }
-});
+
+    // Close Modal
+    if (closeBtn) {
+        closeBtn.onclick = () => {
+            modal.classList.remove('active');
+        };
+    }
+
+    // Close on click outside
+    if (modal) {
+        modal.onclick = (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+            }
+        };
+    }
+
+    // Handle Form Submit
+    if (form) {
+        form.onsubmit = (e) => {
+            e.preventDefault();
+
+            // Basic validation is handled by 'required' attributes
+
+            // Simulate processing
+            const submitBtn = form.querySelector('.form-submit');
+            const originalText = submitBtn.textContent;
+
+            submitBtn.textContent = 'PROCESSING...';
+            submitBtn.disabled = true;
+
+            setTimeout(() => {
+                // Success
+                submitBtn.textContent = 'ORDER PLACED!';
+                submitBtn.style.background = '#4caf50';
+
+                setTimeout(() => {
+                    alert('THANK YOU! Your order has been placed successfully.\nWe will contact you shortly to confirm.');
+
+                    // Reset and Close
+                    cart = [];
+                    saveCart();
+                    updateCartUI();
+                    toggleCart(); // Close sidebar
+                    modal.classList.remove('active'); // Close modal
+                    form.reset();
+
+                    // Reset button
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                    submitBtn.style.background = '';
+                }, 1000);
+            }, 1000);
+        };
+    }
+}
