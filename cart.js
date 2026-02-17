@@ -10,149 +10,191 @@ let cart = [];
 const NETLIFY_FORM_NAME = "order"; // لازم يطابق اسم الفورم المخفي في HTML
 
 function encodeForm(data) {
-    return Object.keys(data)
-        .map((key) => encodeURIComponent(key) + "=" + encodeURIComponent(data[key]))
-        .join("&");
+  return Object.keys(data)
+    .map((key) => encodeURIComponent(key) + "=" + encodeURIComponent(data[key]))
+    .join("&");
 }
 
 // ✅ Determine correct POST URL for Netlify Forms
 function getNetlifyPostUrl() {
-    let path = window.location.pathname || "/";
+  let path = window.location.pathname || "/";
 
-    // remove trailing slash (except root)
-    if (path.length > 1 && path.endsWith("/")) {
-        path = path.slice(0, -1);
-    }
+  // remove trailing slash (except root)
+  if (path.length > 1 && path.endsWith("/")) {
+    path = path.slice(0, -1);
+  }
 
-    // If pretty route like /shop -> enforce shop.html
-    if (path !== "/" && !path.includes(".")) {
-        path = path + ".html";
-    }
+  // If pretty route like /shop -> enforce shop.html
+  if (path !== "/" && !path.includes(".")) {
+    path = path + ".html";
+  }
 
-    return path || "/";
+  return path || "/";
 }
 
 // ================================
-// ✅ ADMIN STORAGE SETTINGS
+// ✅ WHATSAPP SETTINGS (MAIN)
 // ================================
-// Orders are saved to localStorage and displayed in admin.html
+const ORDER_WHATSAPP_NUMBER = "201130447270";
 
+function buildOrderMessage({
+  customerName,
+  customerPhone,
+  customerGov,
+  customerAddress,
+  customerEmail,
+  subtotal,
+  shipping,
+  total,
+  orderItems,
+}) {
+  const itemsText = orderItems
+    .map((it) => `• ${it.name} x${it.qty} = ${it.lineTotal.toFixed(2)} EGP`)
+    .join("\n");
+
+  return (
+    `New Order - SHAMS FRAGRANCE\n\n` +
+    `Name: ${customerName}\n` +
+    `Phone: ${customerPhone}\n` +
+    `Governorate: ${customerGov}\n` +
+    `Address: ${customerAddress}\n` +
+    `Email: ${customerEmail || "Not provided"}\n\n` +
+    `Items:\n${itemsText}\n\n` +
+    `Subtotal: ${subtotal.toFixed(2)} EGP\n` +
+    `Shipping: ${shipping === 0 ? "FREE" : shipping.toFixed(2) + " EGP"}\n` +
+    `Total: ${total.toFixed(2)} EGP\n`
+  );
+}
+
+function openWhatsAppNow(message) {
+  const waUrl = `https://wa.me/${ORDER_WHATSAPP_NUMBER}?text=${encodeURIComponent(
+    message
+  )}`;
+
+  // ✅ لازم يحصل فورًا (بدون await) عشان المتصفح ما يمنعش الـ popup
+  const win = window.open(waUrl, "_blank");
+
+  // لو المتصفح منع popup → افتح في نفس التاب
+  if (!win || win.closed || typeof win.closed === "undefined") {
+    window.location.href = waUrl;
+  }
+}
 
 // ================================
 // OPTIONAL: Send to Netlify in background (doesn't block WhatsApp)
 // ================================
 function sendToNetlifyInBackground(payload) {
-    try {
-        // الأفضل لو متاح: sendBeacon
-        if (navigator.sendBeacon) {
-            const body = encodeForm(payload);
-            const blob = new Blob([body], { type: "application/x-www-form-urlencoded" });
-            navigator.sendBeacon(getNetlifyPostUrl(), blob);
-            return;
-        }
+  try {
+    // الأفضل لو متاح: sendBeacon
+    if (navigator.sendBeacon) {
+      const body = encodeForm(payload);
+      const blob = new Blob([body], { type: "application/x-www-form-urlencoded" });
+      navigator.sendBeacon(getNetlifyPostUrl(), blob);
+      return;
+    }
 
-        // fallback: fetch keepalive بدون await
-        fetch(getNetlifyPostUrl(), {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: encodeForm(payload),
-            keepalive: true,
-        }).catch(() => { });
-    } catch (_) { }
+    // fallback: fetch keepalive بدون await
+    fetch(getNetlifyPostUrl(), {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: encodeForm(payload),
+      keepalive: true,
+    }).catch(() => { });
+  } catch (_) { }
 }
 
 // Load cart from localStorage
 function loadCart() {
-    const savedCart = localStorage.getItem("shamsCart");
-    if (savedCart) {
-        cart = JSON.parse(savedCart);
-        updateCartUI();
-    }
+  const savedCart = localStorage.getItem("shamsCart");
+  if (savedCart) {
+    cart = JSON.parse(savedCart);
+    updateCartUI();
+  }
 }
 
 // Save cart to localStorage
 function saveCart() {
-    localStorage.setItem("shamsCart", JSON.stringify(cart));
+  localStorage.setItem("shamsCart", JSON.stringify(cart));
 }
 
 // Add item to cart
 function addToCart(product) {
-    const existingItem = cart.find((item) => item.id === product.id);
+  const existingItem = cart.find((item) => item.id === product.id);
 
-    if (existingItem) {
-        existingItem.quantity += 1;
-    } else {
-        cart.push({
-            id: product.id,
-            name: product.name,
-            price: product.price,
-            image: product.image,
-            quantity: 1,
-        });
-    }
+  if (existingItem) {
+    existingItem.quantity += 1;
+  } else {
+    cart.push({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+      quantity: 1,
+    });
+  }
 
-    saveCart();
-    updateCartUI();
-    showCartFeedback();
+  saveCart();
+  updateCartUI();
+  showCartFeedback();
 }
 
 // Remove item from cart
 function removeFromCart(productId) {
-    cart = cart.filter((item) => item.id !== productId);
-    saveCart();
-    updateCartUI();
+  cart = cart.filter((item) => item.id !== productId);
+  saveCart();
+  updateCartUI();
 }
 
 // Update item quantity
 function updateQuantity(productId, change) {
-    const item = cart.find((item) => item.id === productId);
-    if (item) {
-        item.quantity += change;
-        if (item.quantity <= 0) {
-            removeFromCart(productId);
-        } else {
-            saveCart();
-            updateCartUI();
-        }
+  const item = cart.find((item) => item.id === productId);
+  if (item) {
+    item.quantity += change;
+    if (item.quantity <= 0) {
+      removeFromCart(productId);
+    } else {
+      saveCart();
+      updateCartUI();
     }
+  }
 }
 
 // Calculate cart totals
 function calculateTotals() {
-    const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const shipping = subtotal >= 1000 ? 0 : 80;
-    const total = subtotal + shipping;
+  const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const shipping = subtotal >= 1000 ? 0 : 80;
+  const total = subtotal + shipping;
 
-    return { subtotal, shipping, total };
+  return { subtotal, shipping, total };
 }
 
 // Update cart UI
 function updateCartUI() {
-    const cartCount = document.getElementById("cartCount");
-    const cartItems = document.getElementById("cartItems");
-    const cartSubtotal = document.getElementById("cartSubtotal");
-    const cartShipping = document.getElementById("cartShipping");
-    const cartTotal = document.getElementById("cartTotal");
-    const shippingNotice = document.getElementById("shippingNotice");
+  const cartCount = document.getElementById("cartCount");
+  const cartItems = document.getElementById("cartItems");
+  const cartSubtotal = document.getElementById("cartSubtotal");
+  const cartShipping = document.getElementById("cartShipping");
+  const cartTotal = document.getElementById("cartTotal");
+  const shippingNotice = document.getElementById("shippingNotice");
 
-    // Update cart count
-    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-    if (cartCount) cartCount.textContent = totalItems;
+  // Update cart count
+  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+  if (cartCount) cartCount.textContent = totalItems;
 
-    // Update cart items
-    if (cartItems) {
-        if (cart.length === 0) {
-            cartItems.innerHTML = `
+  // Update cart items
+  if (cartItems) {
+    if (cart.length === 0) {
+      cartItems.innerHTML = `
         <div class="empty-cart">
           <i class="fas fa-shopping-bag"></i>
           <p>Your cart is empty</p>
           <a href="shop.html" class="cta-button">BROWSE PRODUCTS</a>
         </div>
       `;
-        } else {
-            cartItems.innerHTML = cart
-                .map(
-                    (item) => `
+    } else {
+      cartItems.innerHTML = cart
+        .map(
+          (item) => `
           <div class="cart-item">
             <img src="${item.image}" alt="${item.name}" class="cart-item-image">
             <div class="cart-item-details">
@@ -173,93 +215,93 @@ function updateCartUI() {
             </button>
           </div>
         `
-                )
-                .join("");
-        }
+        )
+        .join("");
     }
+  }
 
-    // Update totals
-    const { subtotal, shipping, total } = calculateTotals();
+  // Update totals
+  const { subtotal, shipping, total } = calculateTotals();
 
-    if (cartSubtotal) cartSubtotal.textContent = `${subtotal.toFixed(2)} EGP`;
+  if (cartSubtotal) cartSubtotal.textContent = `${subtotal.toFixed(2)} EGP`;
 
-    if (cartShipping) {
-        if (shipping === 0) {
-            cartShipping.innerHTML = `<span style="color: #4caf50; font-weight: 600;">FREE</span>`;
-        } else {
-            cartShipping.textContent = `${shipping.toFixed(2)} EGP`;
-        }
+  if (cartShipping) {
+    if (shipping === 0) {
+      cartShipping.innerHTML = `<span style="color: #4caf50; font-weight: 600;">FREE</span>`;
+    } else {
+      cartShipping.textContent = `${shipping.toFixed(2)} EGP`;
     }
+  }
 
-    if (cartTotal) cartTotal.textContent = `${total.toFixed(2)} EGP`;
+  if (cartTotal) cartTotal.textContent = `${total.toFixed(2)} EGP`;
 
-    // Show free shipping notice
-    if (shippingNotice) {
-        if (subtotal >= 1000) {
-            shippingNotice.innerHTML = `
+  // Show free shipping notice
+  if (shippingNotice) {
+    if (subtotal >= 1000) {
+      shippingNotice.innerHTML = `
         <i class="fas fa-truck"></i>
         Congratulations! You get FREE SHIPPING!
       `;
-            shippingNotice.classList.add("show");
-            shippingNotice.style.background = "";
-            shippingNotice.style.borderColor = "";
-            shippingNotice.style.color = "";
-        } else {
-            const remaining = 1000 - subtotal;
-            shippingNotice.innerHTML = `
+      shippingNotice.classList.add("show");
+      shippingNotice.style.background = "";
+      shippingNotice.style.borderColor = "";
+      shippingNotice.style.color = "";
+    } else {
+      const remaining = 1000 - subtotal;
+      shippingNotice.innerHTML = `
         <i class="fas fa-info-circle"></i>
         Add ${remaining.toFixed(2)} EGP more for FREE SHIPPING
       `;
-            shippingNotice.classList.add("show");
-            shippingNotice.style.background = "#fff3cd";
-            shippingNotice.style.borderColor = "#ffc107";
-            shippingNotice.style.color = "#856404";
-        }
+      shippingNotice.classList.add("show");
+      shippingNotice.style.background = "#fff3cd";
+      shippingNotice.style.borderColor = "#ffc107";
+      shippingNotice.style.color = "#856404";
     }
+  }
 }
 
 // Toggle cart sidebar
 function toggleCart() {
-    const cartSidebar = document.getElementById("cartSidebar");
-    const cartOverlay = document.getElementById("cartOverlay");
+  const cartSidebar = document.getElementById("cartSidebar");
+  const cartOverlay = document.getElementById("cartOverlay");
 
-    if (cartSidebar && cartOverlay) {
-        cartSidebar.classList.toggle("active");
-        cartOverlay.classList.toggle("active");
-    }
+  if (cartSidebar && cartOverlay) {
+    cartSidebar.classList.toggle("active");
+    cartOverlay.classList.toggle("active");
+  }
 }
 
 // Show add to cart feedback
 function showCartFeedback() {
-    const cartIcon = document.getElementById("cartIcon");
-    if (cartIcon) {
-        cartIcon.style.transform = "scale(1.3)";
-        setTimeout(() => {
-            cartIcon.style.transform = "scale(1)";
-        }, 200);
-    }
+  const cartIcon = document.getElementById("cartIcon");
+  if (cartIcon) {
+    cartIcon.style.transform = "scale(1.3)";
+    setTimeout(() => {
+      cartIcon.style.transform = "scale(1)";
+    }, 200);
+  }
 }
 
 // Initialize cart
 document.addEventListener("DOMContentLoaded", () => {
-    loadCart();
+  loadCart();
 
-    const cartIcon = document.getElementById("cartIcon");
-    if (cartIcon) cartIcon.addEventListener("click", toggleCart);
+  const cartIcon = document.getElementById("cartIcon");
+  if (cartIcon) cartIcon.addEventListener("click", toggleCart);
 
-    const cartClose = document.getElementById("cartClose");
-    if (cartClose) cartClose.addEventListener("click", toggleCart);
+  const cartClose = document.getElementById("cartClose");
+  if (cartClose) cartClose.addEventListener("click", toggleCart);
 
-    const cartOverlay = document.getElementById("cartOverlay");
-    if (cartOverlay) cartOverlay.addEventListener("click", toggleCart);
+  const cartOverlay = document.getElementById("cartOverlay");
+  if (cartOverlay) cartOverlay.addEventListener("click", toggleCart);
 
-    initCheckoutModal();
+  initCheckoutModal();
 });
 
 function initCheckoutModal() {
-    // 1) Inject Modal HTML
-    if (!document.getElementById("checkoutModal")) {
-        const modalHTML = `
+  // 1) Inject Modal HTML
+  if (!document.getElementById("checkoutModal")) {
+    const modalHTML = `
       <div class="checkout-modal" id="checkoutModal">
         <div class="checkout-container">
           <div class="checkout-header">
@@ -336,28 +378,28 @@ function initCheckoutModal() {
         </div>
       </div>
     `;
-        document.body.insertAdjacentHTML("beforeend", modalHTML);
-    }
+    document.body.insertAdjacentHTML("beforeend", modalHTML);
+  }
 
-    // 2) Event Listeners
-    const checkoutBtn = document.getElementById("checkoutBtn");
-    const modal = document.getElementById("checkoutModal");
-    const closeBtn = document.getElementById("closeCheckout");
-    const form = document.getElementById("checkoutForm");
+  // 2) Event Listeners
+  const checkoutBtn = document.getElementById("checkoutBtn");
+  const modal = document.getElementById("checkoutModal");
+  const closeBtn = document.getElementById("closeCheckout");
+  const form = document.getElementById("checkoutForm");
 
-    if (checkoutBtn) {
-        checkoutBtn.onclick = (e) => {
-            e.preventDefault();
-            if (cart.length === 0) return alert("Your cart is empty!");
+  if (checkoutBtn) {
+    checkoutBtn.onclick = (e) => {
+      e.preventDefault();
+      if (cart.length === 0) return alert("Your cart is empty!");
 
-            const { total } = calculateTotals();
-            document.getElementById("checkoutTotalDisplay").textContent = total.toFixed(2) + " EGP";
+      const { total } = calculateTotals();
+      document.getElementById("checkoutTotalDisplay").textContent = total.toFixed(2) + " EGP";
 
-            const orderItemsContainer = document.getElementById("checkoutOrderItems");
-            if (orderItemsContainer) {
-                orderItemsContainer.innerHTML = cart
-                    .map(
-                        (item) => `
+      const orderItemsContainer = document.getElementById("checkoutOrderItems");
+      if (orderItemsContainer) {
+        orderItemsContainer.innerHTML = cart
+          .map(
+            (item) => `
               <div class="checkout-item">
                 <img src="${item.image}" alt="${item.name}" class="checkout-item-image">
                 <div class="checkout-item-info">
@@ -367,111 +409,103 @@ function initCheckoutModal() {
                 <span class="checkout-item-price">${(item.price * item.quantity).toFixed(2)} EGP</span>
               </div>
             `
-                    )
-                    .join("");
-            }
+          )
+          .join("");
+      }
 
-            modal.classList.add("active");
-        };
-    }
+      modal.classList.add("active");
+    };
+  }
 
-    if (closeBtn) closeBtn.onclick = () => modal.classList.remove("active");
+  if (closeBtn) closeBtn.onclick = () => modal.classList.remove("active");
 
-    if (modal) {
-        modal.onclick = (e) => {
-            if (e.target === modal) modal.classList.remove("active");
-        };
-    }
+  if (modal) {
+    modal.onclick = (e) => {
+      if (e.target === modal) modal.classList.remove("active");
+    };
+  }
 
-    // ✅ SUBMIT: WhatsApp FIRST (no await) ثم أي حاجة تانية
-    if (form) {
-        form.onsubmit = (e) => {
-            e.preventDefault();
+  // ✅ SUBMIT: WhatsApp FIRST (no await) ثم أي حاجة تانية
+  if (form) {
+    form.onsubmit = (e) => {
+      e.preventDefault();
 
-            if (cart.length === 0) return alert("Your cart is empty!");
+      if (cart.length === 0) return alert("Your cart is empty!");
 
-            const submitBtn = form.querySelector(".form-submit");
-            const originalText = submitBtn.textContent;
+      const submitBtn = form.querySelector(".form-submit");
+      const originalText = submitBtn.textContent;
 
-            // Collect data
-            const customerName = document.getElementById("c_name")?.value?.trim() || "";
-            const customerPhone = document.getElementById("c_phone")?.value?.trim() || "";
-            const customerGov = document.getElementById("c_gov")?.value || "";
-            const customerAddress = document.getElementById("c_address")?.value?.trim() || "";
-            const customerEmail = document.getElementById("c_email")?.value?.trim() || "";
+      // Collect data
+      const customerName = document.getElementById("c_name")?.value?.trim() || "";
+      const customerPhone = document.getElementById("c_phone")?.value?.trim() || "";
+      const customerGov = document.getElementById("c_gov")?.value || "";
+      const customerAddress = document.getElementById("c_address")?.value?.trim() || "";
+      const customerEmail = document.getElementById("c_email")?.value?.trim() || "";
 
-            if (!customerName || !customerPhone || !customerGov || !customerAddress) {
-                return alert("Please fill all required fields.");
-            }
+      if (!customerName || !customerPhone || !customerGov || !customerAddress) {
+        return alert("Please fill all required fields.");
+      }
 
-            const { subtotal, shipping, total } = calculateTotals();
-            const orderItems = cart.map((item) => ({
-                id: item.id,
-                name: item.name,
-                image: item.image,
-                price: item.price,
-                qty: item.quantity,
-                lineTotal: item.price * item.quantity,
-            }));
+      const { subtotal, shipping, total } = calculateTotals();
+      const orderItems = cart.map((item) => ({
+        id: item.id,
+        name: item.name,
+        image: item.image,
+        price: item.price,
+        qty: item.quantity,
+        lineTotal: item.price * item.quantity,
+      }));
 
-            // ✅ 1) Save to Local Admin Storage (for dashboard)
-            const newOrder = {
-                id: 'ORD-' + Date.now(),
-                date: new Date().toISOString(),
-                status: 'pending',
-                customerName,
-                customerPhone,
-                customerGov,
-                customerAddress,
-                customerEmail,
-                orderItems,
-                subtotal,
-                shipping,
-                total
-            };
-            const existingOrders = JSON.parse(localStorage.getItem('shams_all_orders') || '[]');
-            existingOrders.push(newOrder);
-            localStorage.setItem('shams_all_orders', JSON.stringify(existingOrders));
+      // ✅ 1) Build message + Open WhatsApp NOW
+      const orderMessage = buildOrderMessage({
+        customerName,
+        customerPhone,
+        customerGov,
+        customerAddress,
+        customerEmail,
+        subtotal,
+        shipping,
+        total,
+        orderItems,
+      });
 
-            // ✅ 2) OPTIONAL: Send to Netlify in background (backup)
-            const payload = {
-                "form-name": NETLIFY_FORM_NAME,
-                "bot-field": "",
-                customer_name: customerName,
-                customer_phone: customerPhone,
-                customer_gov: customerGov,
-                customer_address: customerAddress,
-                customer_email: customerEmail,
-                order_subtotal: subtotal.toFixed(2) + " EGP",
-                order_shipping: shipping === 0 ? "FREE" : shipping.toFixed(2) + " EGP",
-                order_total: total.toFixed(2) + " EGP",
-                order_items_json: JSON.stringify(orderItems),
-            };
-            sendToNetlifyInBackground(payload);
+      openWhatsAppNow(orderMessage);
 
-            // ✅ UI success locally
-            submitBtn.textContent = "SUCCESS! ORDER PLACED";
-            submitBtn.style.background = "#4caf50";
-            submitBtn.disabled = true;
+      // ✅ 2) OPTIONAL: Send to Netlify in background
+      const payload = {
+        "form-name": NETLIFY_FORM_NAME,
+        "bot-field": "",
+        customer_name: customerName,
+        customer_phone: customerPhone,
+        customer_gov: customerGov,
+        customer_address: customerAddress,
+        customer_email: customerEmail,
+        order_subtotal: subtotal.toFixed(2) + " EGP",
+        order_shipping: shipping === 0 ? "FREE" : shipping.toFixed(2) + " EGP",
+        order_total: total.toFixed(2) + " EGP",
+        order_items_json: JSON.stringify(orderItems),
+      };
+      sendToNetlifyInBackground(payload);
 
-            setTimeout(() => {
-                alert("Thank you! Your order has been placed successfully. We will contact you soon.");
+      // ✅ UI success locally
+      submitBtn.textContent = "OPENING WHATSAPP...";
+      submitBtn.disabled = true;
 
-                // Clear cart
-                cart = [];
-                saveCart();
-                updateCartUI();
+      setTimeout(() => {
+        // Clear cart
+        cart = [];
+        saveCart();
+        updateCartUI();
 
-                // Close UI
-                toggleCart();
-                modal.classList.remove("active");
-                form.reset();
+        // Close UI
+        toggleCart();
+        modal.classList.remove("active");
+        form.reset();
 
-                // Reset button
-                submitBtn.textContent = originalText;
-                submitBtn.style.background = "";
-                submitBtn.disabled = false;
-            }, 1000);
-        };
-    }
+        // Reset button
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      }, 600);
+    };
+  }
 }
