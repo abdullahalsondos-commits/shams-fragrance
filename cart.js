@@ -5,7 +5,7 @@
 let cart = [];
 
 // ================================
-// NETLIFY FORMS SETTINGS
+// NETLIFY FORMS SETTINGS (OPTIONAL)
 // ================================
 const NETLIFY_FORM_NAME = "order"; // لازم يطابق اسم الفورم المخفي في HTML
 
@@ -15,7 +15,7 @@ function encodeForm(data) {
         .join("&");
 }
 
-// ✅ IMPORTANT: Determine correct POST URL for Netlify Forms
+// ✅ Determine correct POST URL for Netlify Forms
 function getNetlifyPostUrl() {
     let path = window.location.pathname || "/";
 
@@ -24,8 +24,7 @@ function getNetlifyPostUrl() {
         path = path.slice(0, -1);
     }
 
-    // If your site uses pretty routes like /shop and /product,
-    // but actual files are shop.html / product.html, force .html
+    // If pretty route like /shop -> enforce shop.html
     if (path !== "/" && !path.includes(".")) {
         path = path + ".html";
     }
@@ -34,7 +33,7 @@ function getNetlifyPostUrl() {
 }
 
 // ================================
-// ✅ WhatsApp helper (opens WhatsApp)
+// ✅ WHATSAPP SETTINGS (MAIN)
 // ================================
 const ORDER_WHATSAPP_NUMBER = "201130447270";
 
@@ -67,11 +66,41 @@ function buildOrderMessage({
     );
 }
 
-function openWhatsApp(orderMessage) {
-    const url = `https://wa.me/${ORDER_WHATSAPP_NUMBER}?text=${encodeURIComponent(
-        orderMessage
+function openWhatsAppNow(message) {
+    const waUrl = `https://wa.me/${ORDER_WHATSAPP_NUMBER}?text=${encodeURIComponent(
+        message
     )}`;
-    window.open(url, "_blank");
+
+    // ✅ لازم يحصل فورًا (بدون await) عشان المتصفح ما يمنعش الـ popup
+    const win = window.open(waUrl, "_blank");
+
+    // لو المتصفح منع popup → افتح في نفس التاب
+    if (!win || win.closed || typeof win.closed === "undefined") {
+        window.location.href = waUrl;
+    }
+}
+
+// ================================
+// OPTIONAL: Send to Netlify in background (doesn't block WhatsApp)
+// ================================
+function sendToNetlifyInBackground(payload) {
+    try {
+        // الأفضل لو متاح: sendBeacon
+        if (navigator.sendBeacon) {
+            const body = encodeForm(payload);
+            const blob = new Blob([body], { type: "application/x-www-form-urlencoded" });
+            navigator.sendBeacon(getNetlifyPostUrl(), blob);
+            return;
+        }
+
+        // fallback: fetch keepalive بدون await
+        fetch(getNetlifyPostUrl(), {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: encodeForm(payload),
+            keepalive: true,
+        }).catch(() => { });
+    } catch (_) { }
 }
 
 // Load cart from localStorage
@@ -270,6 +299,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function initCheckoutModal() {
+    // 1) Inject Modal HTML
     if (!document.getElementById("checkoutModal")) {
         const modalHTML = `
       <div class="checkout-modal" id="checkoutModal">
@@ -351,6 +381,7 @@ function initCheckoutModal() {
         document.body.insertAdjacentHTML("beforeend", modalHTML);
     }
 
+    // 2) Event Listeners
     const checkoutBtn = document.getElementById("checkoutBtn");
     const modal = document.getElementById("checkoutModal");
     const closeBtn = document.getElementById("closeCheckout");
@@ -369,15 +400,15 @@ function initCheckoutModal() {
                 orderItemsContainer.innerHTML = cart
                     .map(
                         (item) => `
-            <div class="checkout-item">
-              <img src="${item.image}" alt="${item.name}" class="checkout-item-image">
-              <div class="checkout-item-info">
-                <span class="checkout-item-qty">${item.quantity}x</span>
-                <span class="checkout-item-name">${item.name}</span>
+              <div class="checkout-item">
+                <img src="${item.image}" alt="${item.name}" class="checkout-item-image">
+                <div class="checkout-item-info">
+                  <span class="checkout-item-qty">${item.quantity}x</span>
+                  <span class="checkout-item-name">${item.name}</span>
+                </div>
+                <span class="checkout-item-price">${(item.price * item.quantity).toFixed(2)} EGP</span>
               </div>
-              <span class="checkout-item-price">${(item.price * item.quantity).toFixed(2)} EGP</span>
-            </div>
-          `
+            `
                     )
                     .join("");
             }
@@ -394,14 +425,17 @@ function initCheckoutModal() {
         };
     }
 
+    // ✅ SUBMIT: WhatsApp FIRST (no await) ثم أي حاجة تانية
     if (form) {
-        form.onsubmit = async (e) => {
+        form.onsubmit = (e) => {
             e.preventDefault();
+
             if (cart.length === 0) return alert("Your cart is empty!");
 
             const submitBtn = form.querySelector(".form-submit");
             const originalText = submitBtn.textContent;
 
+            // Collect data
             const customerName = document.getElementById("c_name")?.value?.trim() || "";
             const customerPhone = document.getElementById("c_phone")?.value?.trim() || "";
             const customerGov = document.getElementById("c_gov")?.value || "";
@@ -421,75 +455,56 @@ function initCheckoutModal() {
                 lineTotal: item.price * item.quantity,
             }));
 
-            submitBtn.textContent = "SENDING...";
+            // ✅ 1) Build message + Open WhatsApp NOW
+            const orderMessage = buildOrderMessage({
+                customerName,
+                customerPhone,
+                customerGov,
+                customerAddress,
+                customerEmail,
+                subtotal,
+                shipping,
+                total,
+                orderItems,
+            });
+
+            openWhatsAppNow(orderMessage);
+
+            // ✅ 2) OPTIONAL: Send to Netlify in background (مش هيعطّل واتساب)
+            const payload = {
+                "form-name": NETLIFY_FORM_NAME,
+                "bot-field": "",
+                customer_name: customerName,
+                customer_phone: customerPhone,
+                customer_gov: customerGov,
+                customer_address: customerAddress,
+                customer_email: customerEmail,
+                order_subtotal: subtotal.toFixed(2) + " EGP",
+                order_shipping: shipping === 0 ? "FREE" : shipping.toFixed(2) + " EGP",
+                order_total: total.toFixed(2) + " EGP",
+                order_items_json: JSON.stringify(orderItems),
+            };
+            sendToNetlifyInBackground(payload);
+
+            // ✅ UI success locally
+            submitBtn.textContent = "OPENING WHATSAPP...";
             submitBtn.disabled = true;
 
-            try {
-                const payload = {
-                    "form-name": NETLIFY_FORM_NAME,
-                    "bot-field": "",
-                    customer_name: customerName,
-                    customer_phone: customerPhone,
-                    customer_gov: customerGov,
-                    customer_address: customerAddress,
-                    customer_email: customerEmail,
-                    order_subtotal: subtotal.toFixed(2) + " EGP",
-                    order_shipping: shipping === 0 ? "FREE" : shipping.toFixed(2) + " EGP",
-                    order_total: total.toFixed(2) + " EGP",
-                    order_items_json: JSON.stringify(orderItems),
-                };
+            setTimeout(() => {
+                // Clear cart
+                cart = [];
+                saveCart();
+                updateCartUI();
 
-                const postUrl = getNetlifyPostUrl();
+                // Close UI
+                toggleCart();
+                modal.classList.remove("active");
+                form.reset();
 
-                // ✅ IMPORTANT: Netlify غالباً بيرد Redirect (302) فـ res.ok ممكن يبقى false
-                // فهنا بنعتبر النجاح لو res.status بين 200-399
-                const res = await fetch(postUrl, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                    body: encodeForm(payload),
-                });
-
-                if (!(res.status >= 200 && res.status < 400)) {
-                    throw new Error("Netlify Forms submission failed: " + res.status);
-                }
-
-                // ✅ Optional: فتح واتساب برسالة جاهزة بعد نجاح الأوردر
-                const orderMessage = buildOrderMessage({
-                    customerName,
-                    customerPhone,
-                    customerGov,
-                    customerAddress,
-                    customerEmail,
-                    subtotal,
-                    shipping,
-                    total,
-                    orderItems,
-                });
-                openWhatsApp(orderMessage);
-
-                submitBtn.textContent = "ORDER SENT ✓";
-                submitBtn.style.background = "#4caf50";
-
-                setTimeout(() => {
-                    alert("THANK YOU! Your order has been placed successfully.\nWe will contact you shortly to confirm.");
-
-                    cart = [];
-                    saveCart();
-                    updateCartUI();
-                    toggleCart();
-                    modal.classList.remove("active");
-                    form.reset();
-
-                    submitBtn.textContent = originalText;
-                    submitBtn.disabled = false;
-                    submitBtn.style.background = "";
-                }, 600);
-            } catch (err) {
-                console.error(err);
-                alert("حصلت مشكلة في إرسال الأوردر. جرّب تاني.");
+                // Reset button
                 submitBtn.textContent = originalText;
                 submitBtn.disabled = false;
-            }
+            }, 600);
         };
     }
 }
