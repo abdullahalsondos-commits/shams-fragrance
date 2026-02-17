@@ -33,6 +33,55 @@ function getNetlifyPostUrl() {
     return path || "/";
 }
 
+// ================================
+// ✅ NEW: WhatsApp + Email helpers
+// ================================
+const ORDER_WHATSAPP_NUMBER = "201130447270";
+const ORDER_EMAIL_TO = "mostafahmed_46455@icloud.com";
+
+function buildOrderMessage({
+    customerName,
+    customerPhone,
+    customerGov,
+    customerAddress,
+    customerEmail,
+    subtotal,
+    shipping,
+    total,
+    orderItems,
+}) {
+    const itemsText = orderItems
+        .map((it) => `• ${it.name} x${it.qty} = ${it.lineTotal.toFixed(2)} EGP`)
+        .join("\n");
+
+    return (
+        `New Order - SHAMS FRAGRANCE\n\n` +
+        `Name: ${customerName}\n` +
+        `Phone: ${customerPhone}\n` +
+        `Governorate: ${customerGov}\n` +
+        `Address: ${customerAddress}\n` +
+        `Email: ${customerEmail || "Not provided"}\n\n` +
+        `Items:\n${itemsText}\n\n` +
+        `Subtotal: ${subtotal.toFixed(2)} EGP\n` +
+        `Shipping: ${shipping === 0 ? "FREE" : shipping.toFixed(2) + " EGP"}\n` +
+        `Total: ${total.toFixed(2)} EGP\n`
+    );
+}
+
+function openWhatsApp(orderMessage) {
+    const url = `https://wa.me/${ORDER_WHATSAPP_NUMBER}?text=${encodeURIComponent(orderMessage)}`;
+    window.open(url, "_blank");
+}
+
+function openEmail(orderMessage) {
+    const subject = "New Order - SHAMS FRAGRANCE";
+    const mailto = `mailto:${ORDER_EMAIL_TO}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(
+        orderMessage
+    )}`;
+    // بعض المتصفحات بتمنع window.open للـ mailto فبنستخدم location
+    window.location.href = mailto;
+}
+
 // Load cart from localStorage
 function loadCart() {
     const savedCart = localStorage.getItem("shamsCart");
@@ -452,6 +501,25 @@ function initCheckoutModal() {
                 if (!res.ok) {
                     throw new Error("Netlify Forms submission failed: " + res.status);
                 }
+
+                // ✅ NEW: After success → send to WhatsApp + Email
+                const orderMessage = buildOrderMessage({
+                    customerName,
+                    customerPhone,
+                    customerGov,
+                    customerAddress,
+                    customerEmail,
+                    subtotal,
+                    shipping,
+                    total,
+                    orderItems,
+                });
+
+                // WhatsApp in new tab
+                openWhatsApp(orderMessage);
+
+                // Email (opens mail client)
+                openEmail(orderMessage);
 
                 // Success UI
                 submitBtn.textContent = "ORDER SENT ✓";
