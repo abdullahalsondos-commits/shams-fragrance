@@ -34,10 +34,9 @@ function getNetlifyPostUrl() {
 }
 
 // ================================
-// ✅ NEW: WhatsApp + Email helpers
+// ✅ WhatsApp helper (opens WhatsApp)
 // ================================
 const ORDER_WHATSAPP_NUMBER = "201130447270";
-const ORDER_EMAIL_TO = "mostafahmed_46455@icloud.com";
 
 function buildOrderMessage({
     customerName,
@@ -69,17 +68,10 @@ function buildOrderMessage({
 }
 
 function openWhatsApp(orderMessage) {
-    const url = `https://wa.me/${ORDER_WHATSAPP_NUMBER}?text=${encodeURIComponent(orderMessage)}`;
-    window.open(url, "_blank");
-}
-
-function openEmail(orderMessage) {
-    const subject = "New Order - SHAMS FRAGRANCE";
-    const mailto = `mailto:${ORDER_EMAIL_TO}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(
+    const url = `https://wa.me/${ORDER_WHATSAPP_NUMBER}?text=${encodeURIComponent(
         orderMessage
     )}`;
-    // بعض المتصفحات بتمنع window.open للـ mailto فبنستخدم location
-    window.location.href = mailto;
+    window.open(url, "_blank");
 }
 
 // Load cart from localStorage
@@ -158,9 +150,7 @@ function updateCartUI() {
 
     // Update cart count
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-    if (cartCount) {
-        cartCount.textContent = totalItems;
-    }
+    if (cartCount) cartCount.textContent = totalItems;
 
     // Update cart items
     if (cartItems) {
@@ -204,9 +194,7 @@ function updateCartUI() {
     // Update totals
     const { subtotal, shipping, total } = calculateTotals();
 
-    if (cartSubtotal) {
-        cartSubtotal.textContent = `${subtotal.toFixed(2)} EGP`;
-    }
+    if (cartSubtotal) cartSubtotal.textContent = `${subtotal.toFixed(2)} EGP`;
 
     if (cartShipping) {
         if (shipping === 0) {
@@ -216,9 +204,7 @@ function updateCartUI() {
         }
     }
 
-    if (cartTotal) {
-        cartTotal.textContent = `${total.toFixed(2)} EGP`;
-    }
+    if (cartTotal) cartTotal.textContent = `${total.toFixed(2)} EGP`;
 
     // Show free shipping notice
     if (shippingNotice) {
@@ -271,30 +257,19 @@ function showCartFeedback() {
 document.addEventListener("DOMContentLoaded", () => {
     loadCart();
 
-    // Cart icon click
     const cartIcon = document.getElementById("cartIcon");
-    if (cartIcon) {
-        cartIcon.addEventListener("click", toggleCart);
-    }
+    if (cartIcon) cartIcon.addEventListener("click", toggleCart);
 
-    // Close cart button
     const cartClose = document.getElementById("cartClose");
-    if (cartClose) {
-        cartClose.addEventListener("click", toggleCart);
-    }
+    if (cartClose) cartClose.addEventListener("click", toggleCart);
 
-    // Overlay click
     const cartOverlay = document.getElementById("cartOverlay");
-    if (cartOverlay) {
-        cartOverlay.addEventListener("click", toggleCart);
-    }
+    if (cartOverlay) cartOverlay.addEventListener("click", toggleCart);
 
-    // Initialize Checkout Modal
     initCheckoutModal();
 });
 
 function initCheckoutModal() {
-    // 1. Inject Modal HTML
     if (!document.getElementById("checkoutModal")) {
         const modalHTML = `
       <div class="checkout-modal" id="checkoutModal">
@@ -305,9 +280,7 @@ function initCheckoutModal() {
           </div>
           <div class="checkout-body">
             <div class="order-summary-mini">
-              <div id="checkoutOrderItems" class="checkout-items-container">
-                <!-- Items will be injected here -->
-              </div>
+              <div id="checkoutOrderItems" class="checkout-items-container"></div>
               <div class="checkout-total-row">
                 <span>Total Amount:</span>
                 <span class="order-total-price" id="checkoutTotalDisplay">0.00 EGP</span>
@@ -378,20 +351,15 @@ function initCheckoutModal() {
         document.body.insertAdjacentHTML("beforeend", modalHTML);
     }
 
-    // 2. Event Listeners
     const checkoutBtn = document.getElementById("checkoutBtn");
     const modal = document.getElementById("checkoutModal");
     const closeBtn = document.getElementById("closeCheckout");
     const form = document.getElementById("checkoutForm");
 
-    // Open Modal
     if (checkoutBtn) {
         checkoutBtn.onclick = (e) => {
             e.preventDefault();
-            if (cart.length === 0) {
-                alert("Your cart is empty!");
-                return;
-            }
+            if (cart.length === 0) return alert("Your cart is empty!");
 
             const { total } = calculateTotals();
             document.getElementById("checkoutTotalDisplay").textContent = total.toFixed(2) + " EGP";
@@ -401,15 +369,15 @@ function initCheckoutModal() {
                 orderItemsContainer.innerHTML = cart
                     .map(
                         (item) => `
-              <div class="checkout-item">
-                <img src="${item.image}" alt="${item.name}" class="checkout-item-image">
-                <div class="checkout-item-info">
-                  <span class="checkout-item-qty">${item.quantity}x</span>
-                  <span class="checkout-item-name">${item.name}</span>
-                </div>
-                <span class="checkout-item-price">${(item.price * item.quantity).toFixed(2)} EGP</span>
+            <div class="checkout-item">
+              <img src="${item.image}" alt="${item.name}" class="checkout-item-image">
+              <div class="checkout-item-info">
+                <span class="checkout-item-qty">${item.quantity}x</span>
+                <span class="checkout-item-name">${item.name}</span>
               </div>
-            `
+              <span class="checkout-item-price">${(item.price * item.quantity).toFixed(2)} EGP</span>
+            </div>
+          `
                     )
                     .join("");
             }
@@ -418,38 +386,22 @@ function initCheckoutModal() {
         };
     }
 
-    // Close Modal
-    if (closeBtn) {
-        closeBtn.onclick = () => {
-            modal.classList.remove("active");
-        };
-    }
+    if (closeBtn) closeBtn.onclick = () => modal.classList.remove("active");
 
-    // Close on click outside
     if (modal) {
         modal.onclick = (e) => {
-            if (e.target === modal) {
-                modal.classList.remove("active");
-            }
+            if (e.target === modal) modal.classList.remove("active");
         };
     }
 
-    // ================================
-    // Handle Form Submit (REAL ORDER)
-    // ================================
     if (form) {
         form.onsubmit = async (e) => {
             e.preventDefault();
-
-            if (cart.length === 0) {
-                alert("Your cart is empty!");
-                return;
-            }
+            if (cart.length === 0) return alert("Your cart is empty!");
 
             const submitBtn = form.querySelector(".form-submit");
             const originalText = submitBtn.textContent;
 
-            // Collect customer data
             const customerName = document.getElementById("c_name")?.value?.trim() || "";
             const customerPhone = document.getElementById("c_phone")?.value?.trim() || "";
             const customerGov = document.getElementById("c_gov")?.value || "";
@@ -457,11 +409,9 @@ function initCheckoutModal() {
             const customerEmail = document.getElementById("c_email")?.value?.trim() || "";
 
             if (!customerName || !customerPhone || !customerGov || !customerAddress) {
-                alert("Please fill all required fields.");
-                return;
+                return alert("Please fill all required fields.");
             }
 
-            // Totals + Items
             const { subtotal, shipping, total } = calculateTotals();
             const orderItems = cart.map((item) => ({
                 id: item.id,
@@ -489,20 +439,21 @@ function initCheckoutModal() {
                     order_items_json: JSON.stringify(orderItems),
                 };
 
-                // ✅ FIX: correct POST URL
                 const postUrl = getNetlifyPostUrl();
 
+                // ✅ IMPORTANT: Netlify غالباً بيرد Redirect (302) فـ res.ok ممكن يبقى false
+                // فهنا بنعتبر النجاح لو res.status بين 200-399
                 const res = await fetch(postUrl, {
                     method: "POST",
                     headers: { "Content-Type": "application/x-www-form-urlencoded" },
                     body: encodeForm(payload),
                 });
 
-                if (!res.ok) {
+                if (!(res.status >= 200 && res.status < 400)) {
                     throw new Error("Netlify Forms submission failed: " + res.status);
                 }
 
-                // ✅ NEW: After success → send to WhatsApp + Email
+                // ✅ Optional: فتح واتساب برسالة جاهزة بعد نجاح الأوردر
                 const orderMessage = buildOrderMessage({
                     customerName,
                     customerPhone,
@@ -514,29 +465,21 @@ function initCheckoutModal() {
                     total,
                     orderItems,
                 });
-
-                // WhatsApp in new tab
                 openWhatsApp(orderMessage);
 
-                // Email (opens mail client)
-                openEmail(orderMessage);
-
-                // Success UI
                 submitBtn.textContent = "ORDER SENT ✓";
                 submitBtn.style.background = "#4caf50";
 
                 setTimeout(() => {
                     alert("THANK YOU! Your order has been placed successfully.\nWe will contact you shortly to confirm.");
 
-                    // Reset and Close
                     cart = [];
                     saveCart();
                     updateCartUI();
-                    toggleCart(); // Close sidebar
-                    modal.classList.remove("active"); // Close modal
+                    toggleCart();
+                    modal.classList.remove("active");
                     form.reset();
 
-                    // Reset button
                     submitBtn.textContent = originalText;
                     submitBtn.disabled = false;
                     submitBtn.style.background = "";
