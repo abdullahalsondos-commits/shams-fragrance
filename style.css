@@ -27,6 +27,8 @@ body {
     background-color: var(--color-secondary);
     line-height: 1.6;
     overflow-x: hidden;
+    padding-top: 130px;
+    /* Space for announcement-bar + header */
 }
 
 /* Typography */
@@ -69,21 +71,34 @@ a {
 /* Header & Navigation */
 header {
     position: fixed;
-    top: 0;
+    top: 50px;
+    /* Matching new announcement bar height */
     left: 0;
     width: 100%;
     padding: 1.5rem 5%;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
     z-index: 1000;
     border-bottom: 1px solid var(--color-border);
     transition: var(--transition);
 }
 
 header.scrolled {
-    padding: 1rem 5%;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    padding: 0.8rem 5%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+}
+
+@media (max-width: 768px) {
+    body {
+        padding-top: 120px;
+    }
+
+    header,
+    header.scrolled {
+        top: 45px;
+        padding: 1rem 5%;
+    }
 }
 
 nav {
@@ -809,54 +824,84 @@ footer {
     font-size: 0.9rem;
 }
 
-/* Floating Shipping Notice */
-.floating-shipping-notice {
+/* Top Announcement Bar */
+.announcement-bar {
     position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%);
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 50px;
     background: #000;
-    color: #fff;
-    padding: 15px 40px;
-    border-radius: 50px;
-    font-size: 1rem;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    z-index: 9999;
+    color: #ffd700;
+    /* Gold text for high visibility */
     display: flex;
     align-items: center;
+    justify-content: center;
+    z-index: 10001;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
     gap: 15px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    animation: floatNotice 3s ease-in-out infinite;
-    pointer-events: none;
-    white-space: nowrap;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
-.floating-shipping-notice i {
+.announcement-bar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -150%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.4), transparent);
+    animation: shimmerBar 4s infinite;
+}
+
+.announcement-bar i {
     color: #FFD700;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
+    position: relative;
+    z-index: 1;
+    animation: pulseIcon 2s infinite;
 }
 
-@keyframes floatNotice {
+@keyframes pulseIcon {
 
     0%,
     100% {
-        transform: translate(-50%, 0);
+        transform: scale(1);
     }
 
     50% {
-        transform: translate(-50%, -15px);
+        transform: scale(1.2);
+    }
+}
+
+.announcement-bar span {
+    position: relative;
+    z-index: 1;
+}
+
+@keyframes shimmerBar {
+    0% {
+        left: -150%;
+    }
+
+    50% {
+        left: 150%;
+    }
+
+    100% {
+        left: 150%;
     }
 }
 
 @media (max-width: 768px) {
-    .floating-shipping-notice {
-        bottom: 25px;
-        padding: 12px 25px;
-        font-size: 0.9rem;
-        width: 85%;
-        justify-content: center;
+    .announcement-bar {
+        font-size: 0.8rem;
+        height: 45px;
+        gap: 8px;
     }
 }
 

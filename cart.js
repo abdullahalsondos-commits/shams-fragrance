@@ -33,52 +33,10 @@ function getNetlifyPostUrl() {
 }
 
 // ================================
-// ✅ WHATSAPP SETTINGS (MAIN)
+// ✅ ADMIN STORAGE SETTINGS
 // ================================
-const ORDER_WHATSAPP_NUMBER = "201130447270";
+// Orders are saved to localStorage and displayed in admin.html
 
-function buildOrderMessage({
-    customerName,
-    customerPhone,
-    customerGov,
-    customerAddress,
-    customerEmail,
-    subtotal,
-    shipping,
-    total,
-    orderItems,
-}) {
-    const itemsText = orderItems
-        .map((it) => `• ${it.name} x${it.qty} = ${it.lineTotal.toFixed(2)} EGP`)
-        .join("\n");
-
-    return (
-        `New Order - SHAMS FRAGRANCE\n\n` +
-        `Name: ${customerName}\n` +
-        `Phone: ${customerPhone}\n` +
-        `Governorate: ${customerGov}\n` +
-        `Address: ${customerAddress}\n` +
-        `Email: ${customerEmail || "Not provided"}\n\n` +
-        `Items:\n${itemsText}\n\n` +
-        `Subtotal: ${subtotal.toFixed(2)} EGP\n` +
-        `Shipping: ${shipping === 0 ? "FREE" : shipping.toFixed(2) + " EGP"}\n` +
-        `Total: ${total.toFixed(2)} EGP\n`
-    );
-}
-
-function openWhatsAppNow(message) {
-    const waUrl = `https://wa.me/${ORDER_WHATSAPP_NUMBER}?text=${encodeURIComponent(
-        message
-    )}`;
-
-    // ✅ لازم يحصل فورًا (بدون await) عشان المتصفح ما يمنعش الـ popup
-    const win = window.open(waUrl, "_blank");
-
-    // لو المتصفح منع popup → افتح في نفس التاب
-    if (!win || win.closed || typeof win.closed === "undefined") {
-        window.location.href = waUrl;
-    }
-}
 
 // ================================
 // OPTIONAL: Send to Netlify in background (doesn't block WhatsApp)
@@ -450,27 +408,32 @@ function initCheckoutModal() {
             const orderItems = cart.map((item) => ({
                 id: item.id,
                 name: item.name,
+                image: item.image,
                 price: item.price,
                 qty: item.quantity,
                 lineTotal: item.price * item.quantity,
             }));
 
-            // ✅ 1) Build message + Open WhatsApp NOW
-            const orderMessage = buildOrderMessage({
+            // ✅ 1) Save to Local Admin Storage (for dashboard)
+            const newOrder = {
+                id: 'ORD-' + Date.now(),
+                date: new Date().toISOString(),
+                status: 'pending',
                 customerName,
                 customerPhone,
                 customerGov,
                 customerAddress,
                 customerEmail,
+                orderItems,
                 subtotal,
                 shipping,
-                total,
-                orderItems,
-            });
+                total
+            };
+            const existingOrders = JSON.parse(localStorage.getItem('shams_all_orders') || '[]');
+            existingOrders.push(newOrder);
+            localStorage.setItem('shams_all_orders', JSON.stringify(existingOrders));
 
-            openWhatsAppNow(orderMessage);
-
-            // ✅ 2) OPTIONAL: Send to Netlify in background (مش هيعطّل واتساب)
+            // ✅ 2) OPTIONAL: Send to Netlify in background (backup)
             const payload = {
                 "form-name": NETLIFY_FORM_NAME,
                 "bot-field": "",
@@ -487,10 +450,13 @@ function initCheckoutModal() {
             sendToNetlifyInBackground(payload);
 
             // ✅ UI success locally
-            submitBtn.textContent = "OPENING WHATSAPP...";
+            submitBtn.textContent = "SUCCESS! ORDER PLACED";
+            submitBtn.style.background = "#4caf50";
             submitBtn.disabled = true;
 
             setTimeout(() => {
+                alert("Thank you! Your order has been placed successfully. We will contact you soon.");
+
                 // Clear cart
                 cart = [];
                 saveCart();
@@ -503,8 +469,9 @@ function initCheckoutModal() {
 
                 // Reset button
                 submitBtn.textContent = originalText;
+                submitBtn.style.background = "";
                 submitBtn.disabled = false;
-            }, 600);
+            }, 1000);
         };
     }
 }

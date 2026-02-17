@@ -375,16 +375,16 @@ window.filterByCategory = function (category) {
     }
 };
 
-// Global Floating Shipping Notice
+// Global Top Announcement Bar
 document.addEventListener('DOMContentLoaded', () => {
-    // Check if it already exists (to prevent duplicates)
-    if (!document.querySelector('.floating-shipping-notice')) {
-        const notice = document.createElement('div');
-        notice.className = 'floating-shipping-notice';
-        notice.innerHTML = `
+    if (!document.querySelector('.announcement-bar')) {
+        const bar = document.createElement('div');
+        bar.className = 'announcement-bar';
+        bar.innerHTML = `
             <i class="fas fa-truck"></i>
             <span>Free Shipping on orders over 1000 EGP</span>
+            <i class="fas fa-star" style="margin-left: 5px; color: #FFD700; font-size: 0.8rem;"></i>
         `;
-        document.body.appendChild(notice);
+        document.body.prepend(bar);
     }
 });

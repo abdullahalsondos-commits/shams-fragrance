@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - SHAMS Admin</title>
+    <link rel="stylesheet" href="admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="admin-container">
+        <header class="admin-header">
+            <div class="admin-logo">SHAMS ADMIN</div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </header>
+
+        <section class="admin-stats">
+            <div class="stat-card">
+                <h4>Total Orders</h4>
+                <div class="value" id="statTotalOrders">0</div>
+            </div>
+            <div class="stat-card">
+                <h4>Pending</h4>
+                <div class="value" id="statPendingOrders" style="color: var(--status-pending)">0</div>
+            </div>
+            <div class="stat-card">
+                <h4>Total Revenue</h4>
+                <div class="value" id="statTotalRevenue" style="color: var(--status-completed)">0.00 EGP</div>
+            </div>
+        </section>
+
+        <section class="orders-list">
+            <div class="orders-table-wrapper">
+                <div class="table-header">
+                    <h3>Recent Orders</h3>
+                    <div class="filter-btns">
+                        <button class="filter-btn active" data-filter="all">All</button>
+                        <button class="filter-btn" data-filter="pending">Pending</button>
+                        <button class="filter-btn" data-filter="completed">Completed</button>
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Customer & Address</th>
+                            <th>Items</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTableBody">
+                        <!-- Orders will be injected here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <!-- Order Details Modal -->
+    <div class="modal-overlay" id="orderModalOverlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Order Details</h3>
+                <button class="close-modal" id="closeOrderModal">&times;</button>
+            </div>
+            <div class="modal-body" id="orderDetailsContent">
+                <!-- Details will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+
+</html>
