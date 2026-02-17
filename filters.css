@@ -54,7 +54,8 @@
 
 /* Product Filtering Animations */
 .product-card {
-    animation: fadeInProduct 0.6s ease forwards;
+    transform: translateY(30px);
+    opacity: 0;
 }
 
 .product-card.fade-out {

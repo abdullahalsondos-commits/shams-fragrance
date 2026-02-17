@@ -40,9 +40,11 @@ const ORDER_WHATSAPP_NUMBER = "201130447270";
 function buildOrderMessage({
   customerName,
   customerPhone,
+  customerPhone2,
   customerGov,
   customerAddress,
   customerEmail,
+  customerNotes,
   subtotal,
   shipping,
   total,
@@ -56,10 +58,12 @@ function buildOrderMessage({
     `New Order - SHAMS FRAGRANCE\n\n` +
     `Name: ${customerName}\n` +
     `Phone: ${customerPhone}\n` +
+    (customerPhone2 ? `Emergency Phone: ${customerPhone2}\n` : "") +
     `Governorate: ${customerGov}\n` +
     `Address: ${customerAddress}\n` +
-    `Email: ${customerEmail || "Not provided"}\n\n` +
-    `Items:\n${itemsText}\n\n` +
+    `Email: ${customerEmail || "Not provided"}\n` +
+    (customerNotes ? `Notes: ${customerNotes}\n` : "") +
+    `\nItems:\n${itemsText}\n\n` +
     `Subtotal: ${subtotal.toFixed(2)} EGP\n` +
     `Shipping: ${shipping === 0 ? "FREE" : shipping.toFixed(2) + " EGP"}\n` +
     `Total: ${total.toFixed(2)} EGP\n`
@@ -329,6 +333,11 @@ function initCheckoutModal() {
               </div>
 
               <div class="form-group">
+                <label class="form-label">Emergency Phone (Optional)</label>
+                <input type="tel" class="form-input" id="c_phone2" placeholder="Another phone number" pattern="[0-9]{11}">
+              </div>
+
+              <div class="form-group">
                 <label class="form-label">Governorate <span>*</span></label>
                 <select class="form-select" id="c_gov" required>
                   <option value="" disabled selected>Select Governorate</option>
@@ -370,6 +379,11 @@ function initCheckoutModal() {
               <div class="form-group">
                 <label class="form-label">Email Address (Optional)</label>
                 <input type="email" class="form-input" id="c_email" placeholder="example@email.com">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Order Notes (Optional)</label>
+                <textarea class="form-textarea" id="c_notes" placeholder="Any special instructions for your order..."></textarea>
               </div>
 
               <button type="submit" class="form-submit">CONFIRM ORDER</button>
@@ -438,9 +452,11 @@ function initCheckoutModal() {
       // Collect data
       const customerName = document.getElementById("c_name")?.value?.trim() || "";
       const customerPhone = document.getElementById("c_phone")?.value?.trim() || "";
+      const customerPhone2 = document.getElementById("c_phone2")?.value?.trim() || "";
       const customerGov = document.getElementById("c_gov")?.value || "";
       const customerAddress = document.getElementById("c_address")?.value?.trim() || "";
       const customerEmail = document.getElementById("c_email")?.value?.trim() || "";
+      const customerNotes = document.getElementById("c_notes")?.value?.trim() || "";
 
       if (!customerName || !customerPhone || !customerGov || !customerAddress) {
         return alert("Please fill all required fields.");
@@ -460,9 +476,11 @@ function initCheckoutModal() {
       const orderMessage = buildOrderMessage({
         customerName,
         customerPhone,
+        customerPhone2,
         customerGov,
         customerAddress,
         customerEmail,
+        customerNotes,
         subtotal,
         shipping,
         total,
@@ -477,9 +495,11 @@ function initCheckoutModal() {
         "bot-field": "",
         customer_name: customerName,
         customer_phone: customerPhone,
+        customer_phone2: customerPhone2,
         customer_gov: customerGov,
         customer_address: customerAddress,
         customer_email: customerEmail,
+        customer_notes: customerNotes,
         order_subtotal: subtotal.toFixed(2) + " EGP",
         order_shipping: shipping === 0 ? "FREE" : shipping.toFixed(2) + " EGP",
         order_total: total.toFixed(2) + " EGP",

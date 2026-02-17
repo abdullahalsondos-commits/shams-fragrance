@@ -209,8 +209,7 @@ const observerOptions = {
 const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
-            entry.target.style.opacity = '1';
-            entry.target.style.transform = 'translateY(0)';
+            entry.target.classList.add('in-view');
         }
     });
 }, observerOptions);
@@ -220,9 +219,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const animatedElements = document.querySelectorAll('.product-card, .story-section, .section-header');
 
     animatedElements.forEach(el => {
-        el.style.opacity = '0';
-        el.style.transform = 'translateY(30px)';
-        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
         observer.observe(el);
     });
 
@@ -334,15 +330,12 @@ function filterProducts(category) {
     cards.forEach(card => {
         const cardCategories = card.getAttribute('data-category').split(' ');
 
-        // Remove existing animation
-        card.style.animation = 'none';
-        card.offsetHeight; /* trigger reflow */
-
         if (category === 'all' || cardCategories.includes(category)) {
             card.style.display = 'block';
-            card.style.animation = 'fadeIn 0.5s ease forwards';
+            setTimeout(() => card.classList.add('in-view'), 10);
         } else {
             card.style.display = 'none';
+            card.classList.remove('in-view');
         }
     });
 }
