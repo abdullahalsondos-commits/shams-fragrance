@@ -54,6 +54,9 @@ function buildOrderMessage({
     .map((it) => `• ${it.name} x${it.qty} = ${it.lineTotal.toFixed(2)} EGP`)
     .join("\n");
 
+  const discountValue = parseFloat(localStorage.getItem('shams_discount')) || 0;
+  const discountAmount = subtotal * (discountValue / 100);
+
   return (
     `New Order - SHAMS FRAGRANCE\n\n` +
     `Name: ${customerName}\n` +
@@ -65,6 +68,7 @@ function buildOrderMessage({
     (customerNotes ? `Notes: ${customerNotes}\n` : "") +
     `\nItems:\n${itemsText}\n\n` +
     `Subtotal: ${subtotal.toFixed(2)} EGP\n` +
+    (discountValue > 0 ? `Lucky Discount (${discountValue}%): -${discountAmount.toFixed(2)} EGP\n` : "") +
     `Shipping: ${shipping === 0 ? "FREE" : shipping.toFixed(2) + " EGP"}\n` +
     `Total: ${total.toFixed(2)} EGP\n`
   );
@@ -166,10 +170,12 @@ function updateQuantity(productId, change) {
 // Calculate cart totals
 function calculateTotals() {
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const discountValue = parseFloat(localStorage.getItem('shams_discount')) || 0;
+  const discountAmount = subtotal * (discountValue / 100);
   const shipping = subtotal >= 1000 ? 0 : 80;
-  const total = subtotal + shipping;
+  const total = subtotal - discountAmount + shipping;
 
-  return { subtotal, shipping, total };
+  return { subtotal, shipping, total, discountAmount, discountValue };
 }
 
 // Update cart UI
@@ -180,10 +186,20 @@ function updateCartUI() {
   const cartShipping = document.getElementById("cartShipping");
   const cartTotal = document.getElementById("cartTotal");
   const shippingNotice = document.getElementById("shippingNotice");
+  const spinReminder = document.getElementById("spinReminder");
 
   // Update cart count
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
   if (cartCount) cartCount.textContent = totalItems;
+
+  // Update Spin Reminder
+  if (spinReminder) {
+    if (!localStorage.getItem('shams_wheel_spun') && cart.length > 0) {
+      spinReminder.classList.add("show");
+    } else {
+      spinReminder.classList.remove("show");
+    }
+  }
 
   // Update cart items
   if (cartItems) {
@@ -225,9 +241,28 @@ function updateCartUI() {
   }
 
   // Update totals
-  const { subtotal, shipping, total } = calculateTotals();
+  const { subtotal, shipping, total, discountAmount, discountValue } = calculateTotals();
 
   if (cartSubtotal) cartSubtotal.textContent = `${subtotal.toFixed(2)} EGP`;
+
+  // Display Discount if exists
+  let discountRow = document.getElementById("cartDiscountRow");
+  if (discountValue > 0) {
+    if (!discountRow) {
+      const summary = document.querySelector(".cart-summary");
+      discountRow = document.createElement("div");
+      discountRow.id = "cartDiscountRow";
+      discountRow.className = "summary-row";
+      discountRow.style.color = "#d4af37";
+      discountRow.style.fontWeight = "600";
+      // Insert before total
+      const totalRow = document.querySelector(".summary-row.total");
+      summary.insertBefore(discountRow, totalRow);
+    }
+    discountRow.innerHTML = `<span>Lucky Discount (${discountValue}%):</span> <span>-${discountAmount.toFixed(2)} EGP</span>`;
+  } else if (discountRow) {
+    discountRow.remove();
+  }
 
   if (cartShipping) {
     if (shipping === 0) {
@@ -299,6 +334,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const cartOverlay = document.getElementById("cartOverlay");
   if (cartOverlay) cartOverlay.addEventListener("click", toggleCart);
 
+  const spinReminder = document.getElementById("spinReminder");
+  if (spinReminder) {
+    spinReminder.addEventListener("click", () => {
+      if (window.toggleWheelModal) {
+        window.toggleWheelModal();
+        toggleCart(); // close cart to show wheel
+      }
+    });
+  }
+
   initCheckoutModal();
 });
 
@@ -315,6 +360,10 @@ function initCheckoutModal() {
           <div class="checkout-body">
             <div class="order-summary-mini">
               <div id="checkoutOrderItems" class="checkout-items-container"></div>
+              <div class="checkout-total-row" id="checkoutDiscountRow" style="display: none; color: #d4af37; font-weight: 600; font-size: 0.9rem; margin-top: 0.5rem;">
+                <span>Lucky Discount:</span>
+                <span id="checkoutDiscountDisplay">0.00 EGP</span>
+              </div>
               <div class="checkout-total-row">
                 <span>Total Amount:</span>
                 <span class="order-total-price" id="checkoutTotalDisplay">0.00 EGP</span>
@@ -406,7 +455,17 @@ function initCheckoutModal() {
       e.preventDefault();
       if (cart.length === 0) return alert("Your cart is empty!");
 
-      const { total } = calculateTotals();
+      const { total, discountAmount, discountValue } = calculateTotals();
+
+      const discountRow = document.getElementById("checkoutDiscountRow");
+      const discountDisplay = document.getElementById("checkoutDiscountDisplay");
+      if (discountValue > 0) {
+        discountRow.style.display = "flex";
+        discountDisplay.textContent = `-${discountAmount.toFixed(2)} EGP (${discountValue}%)`;
+      } else {
+        discountRow.style.display = "none";
+      }
+
       document.getElementById("checkoutTotalDisplay").textContent = total.toFixed(2) + " EGP";
 
       const orderItemsContainer = document.getElementById("checkoutOrderItems");

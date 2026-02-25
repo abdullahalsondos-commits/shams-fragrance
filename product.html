@@ -20,6 +20,7 @@
     <!-- Stylesheet -->
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="animations.css">
+    <link rel="stylesheet" href="wheel.css">
     <link rel="stylesheet" href="cart.css">
     <style>
         /* Product Details Specific Styles */
@@ -189,6 +190,17 @@
             <!-- Cart items will be inserted here -->
         </div>
 
+        <div class="cart-reminder-container" style="padding: 0 1.5rem;">
+            <div class="spin-reminder" id="spinReminder">
+                <i class="fas fa-dharmachakra fa-spin" style="color: #e53e3e;"></i>
+                <div class="spin-reminder-text">
+                    <strong>Don't forget to spin!</strong>
+                    <p>You could win up to 20% discount!</p>
+                </div>
+                <i class="fas fa-chevron-right" style="color: #e53e3e;"></i>
+            </div>
+        </div>
+
         <div class="cart-footer">
             <div class="shipping-notice" id="shippingNotice">
                 <!-- Free shipping message -->
@@ -279,6 +291,7 @@
     <!-- Scripts -->
     <script src="script.js"></script>
     <script src="cart.js"></script>
+    <script src="wheel.js"></script>
     <script>
         // Logic to populate product details
         document.addEventListener('DOMContentLoaded', () => {
@@ -335,6 +348,31 @@
         <textarea name="order_items_json"></textarea>
     </form>
 
+    <!-- Lucky Spin Wheel HTML -->
+    <div class="wheel-fab">
+        <i class="fas fa-dharmachakra"></i>
+    </div>
+
+    <div class="wheel-toast">
+        <i class="fas fa-gift"></i>
+        <span>Don't forget to spin the wheel!</span>
+    </div>
+
+    <div class="wheel-overlay">
+        <div class="wheel-modal">
+            <span class="close-wheel">&times;</span>
+            <h2 style="font-family: 'Playfair Display', serif; margin-bottom: 0.5rem;">Lucky Spin</h2>
+            <p style="color: #666; font-size: 0.9rem;">Try your luck and win a discount on your order!</p>
+
+            <div class="wheel-container">
+                <div class="wheel-pointer"></div>
+                <canvas class="wheel-canvas" width="320" height="320"></canvas>
+            </div>
+
+            <div class="wheel-result"></div>
+            <button class="spin-btn">SPIN NOW</button>
+        </div>
+    </div>
 </body>
 
 </html>

@@ -544,3 +544,62 @@
 .order-total-price {
     /* Font weight handled in parent */
 }
+
+/* Spin Wheel Reminder in Cart */
+.spin-reminder {
+    background: #fff5f5;
+    border: 1px dashed #e53e3e;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    display: none;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    animation: pulseRed 2s infinite;
+}
+
+.spin-reminder.show {
+    display: flex;
+}
+
+.spin-reminder:hover {
+    background: #feb2b2;
+    transform: scale(1.02);
+}
+
+.spin-reminder i {
+    color: #e53e3e;
+    font-size: 1.5rem;
+}
+
+.spin-reminder-text {
+    flex: 1;
+}
+
+.spin-reminder-text strong {
+    display: block;
+    color: #c53030;
+    font-size: 0.95rem;
+}
+
+.spin-reminder-text p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #742a2a;
+}
+
+@keyframes pulseRed {
+    0% {
+        box-shadow: 0 0 0 0 rgba(229, 62, 62, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(229, 62, 62, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(229, 62, 62, 0);
+    }
+}

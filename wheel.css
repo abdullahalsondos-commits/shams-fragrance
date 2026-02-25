@@ -1,0 +1,210 @@
+/* Lucky Spin Wheel Styles */
+
+/* Floating Button */
+.wheel-fab {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 65px;
+    height: 65px;
+    background: linear-gradient(135deg, #000, #333);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), 0 0 15px rgba(255, 255, 255, 0.1);
+    z-index: 999;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 2px solid gold;
+    animation: floatFAB 3s ease-in-out infinite;
+}
+
+@keyframes floatFAB {
+
+    0%,
+    100% {
+        transform: translateY(0) rotate(0deg);
+    }
+
+    50% {
+        transform: translateY(-10px) rotate(15deg);
+    }
+}
+
+.wheel-fab:hover {
+    transform: scale(1.1) rotate(360deg);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), 0 0 25px rgba(212, 175, 55, 0.3);
+}
+
+.wheel-fab i {
+    font-size: 1.8rem;
+    background: linear-gradient(to bottom, #d4af37, #fde08d);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Toast Notification */
+.wheel-toast {
+    position: fixed;
+    bottom: 100px;
+    right: 25px;
+    background: #000;
+    color: #fff;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+    z-index: 998;
+    transform: translateX(150%);
+    transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    border-left: 4px solid #d4af37;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.wheel-toast.show {
+    transform: translateX(0);
+}
+
+/* Modal Overlay */
+.wheel-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(10px);
+    z-index: 99999;
+    display: flex;
+    /* Always flex but invisible */
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.wheel-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: all;
+}
+
+/* Wheel Container */
+.wheel-modal {
+    position: relative;
+    width: 90%;
+    max-width: 500px;
+    background: #fff;
+    padding: 3rem 2rem;
+    border-radius: 24px;
+    text-align: center;
+    transform: scale(0.85);
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.wheel-overlay.active .wheel-modal {
+    transform: scale(1);
+}
+
+.close-wheel {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #999;
+    transition: color 0.3s;
+}
+
+.close-wheel:hover {
+    color: #000;
+}
+
+/* The Wheel Itself */
+.wheel-container {
+    position: relative;
+    width: 320px;
+    height: 320px;
+    margin: 2rem auto;
+}
+
+.wheel-canvas {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    box-shadow: 0 0 0 8px #000, 0 0 0 12px #d4af37, 0 20px 50px rgba(0, 0, 0, 0.5);
+    will-change: transform;
+    /* Hardware acceleration */
+}
+
+.wheel-pointer {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 50px;
+    background: #d4af37;
+    clip-path: polygon(50% 100%, 0 0, 100% 0);
+    z-index: 10;
+    filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.2));
+}
+
+.spin-btn {
+    margin-top: 2rem;
+    padding: 1rem 3rem;
+    background: #000;
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.spin-btn:hover:not(:disabled) {
+    background: #d4af37;
+    transform: translateY(-3px);
+    box-shadow: 0 12px 25px rgba(212, 175, 55, 0.4);
+}
+
+.spin-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #ccc;
+}
+
+.wheel-result {
+    margin-top: 1.5rem;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    height: 2rem;
+    color: #000;
+}
+
+@media (max-width: 480px) {
+    .wheel-container {
+        width: 260px;
+        height: 260px;
+    }
+
+    .wheel-fab {
+        width: 55px;
+        height: 55px;
+        bottom: 15px;
+        right: 15px;
+    }
+}
